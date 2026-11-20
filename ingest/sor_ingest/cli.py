@@ -94,12 +94,15 @@ def _download(url: str, dest: Path) -> None:
         url, headers={"User-Agent": "SoR-Assistant-ingest/0.1"}
     )
     with urllib.request.urlopen(req, timeout=60) as r:  # noqa: S310
-        dest.write_bytes(r.read())
+        data = r.read()
+    if not data.startswith(b"%PDF"):
+        raise ValueError("the link did not return a PDF file")
+    dest.write_bytes(data)
 
 
 def cmd_process(args: argparse.Namespace) -> int:
     embedder = get_embedder(args.embedder)
-    done = 0
+    done = skipped = 0
     with store.connect() as conn:
         for source_id, pdf_url, rated in store.approved_unprocessed(conn):
             pdf = PDF_DIR / f"{source_id}.pdf"
@@ -107,8 +110,18 @@ def cmd_process(args: argparse.Namespace) -> int:
                 if not pdf_url:
                     print(f"{source_id}: no pdf_url and no local file; skipping")
                     continue
-                _download(pdf_url, pdf)
-            blocks = parse_pdf(pdf)
+                try:
+                    _download(pdf_url, pdf)
+                except (OSError, ValueError) as exc:  # URLError and HTTPError are OSErrors
+                    print(f"{source_id}: download failed ({exc}); skipping")
+                    skipped += 1
+                    continue
+            try:
+                blocks = parse_pdf(pdf)
+            except Exception as exc:  # noqa: BLE001 (unreadable file: report and go on)
+                print(f"{source_id}: could not read {pdf.name} ({exc}); skipping")
+                skipped += 1
+                continue
             if rated:
                 blocks = annotate_recommendations(blocks)
             passages = chunk_blocks(source_id, blocks)
@@ -119,7 +132,7 @@ def cmd_process(args: argparse.Namespace) -> int:
             )
             print(f"{source_id}: {n} passages")
             done += 1
-    print(f"processed {done} sources")
+    print(f"processed {done} sources, skipped {skipped}")
     return 0
 
 
