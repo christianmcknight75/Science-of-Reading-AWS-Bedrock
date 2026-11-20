@@ -1,4 +1,4 @@
-.PHONY: dev test eval lint migrate seed
+.PHONY: dev test eval lint migrate seed e2e
 
 dev:
 	docker compose up --build
@@ -22,3 +22,7 @@ migrate:
 
 seed:
 	cd api && uv run python -m app.seed myths
+
+# Accessibility + admin page tests (API is mocked; first run: cd web && npx playwright install chromium)
+e2e:
+	cd web && npm run e2e

@@ -226,3 +226,19 @@ def test_held_sources_are_excluded_from_retrieval_even_if_approved(client: TestC
     assert conn.execute(q, (sid,)).fetchone()["n"] == 0
     conn.execute("UPDATE sources SET curation_status = 'ready' WHERE source_id = %s", (sid,))
     assert conn.execute(q, (sid,)).fetchone()["n"] == 1
+
+
+def test_study_design_facts_are_saved_on_approval(client: TestClient) -> None:
+    sid = make_candidate(client)
+    client.post(
+        f"/admin/sources/{sid}/license-snapshot", files={"file": ("l.txt", b"x", "text/plain")}
+    )
+    r = client.post(
+        f"/admin/sources/{sid}/decision",
+        json={
+            "decision": "approve", "license": "cc-by", "attribution": "A", "checklist": GOOD,
+            "randomized": True, "sample_size": 1200, "has_comparison_group": True,
+        },
+    )  # fmt: skip
+    assert r.status_code == 200
+    assert (r.json()["randomized"], r.json()["sample_size"]) == (True, 1200)

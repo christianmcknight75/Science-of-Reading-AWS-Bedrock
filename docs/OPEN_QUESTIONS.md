@@ -14,4 +14,5 @@
 | 10 | License sign-off for Put Reading First, NSW review and the REL PLC guide. Left as candidates with a note. | Aidan | Open (waiting on Aidan) |
 | 11 | ~~Two curated entries had no URL.~~ Added 2026-11-19. | Viktoriia | Closed |
 | 12 | ~~Evidence-label rule.~~ Decided 2026-11-19: WWC ratings map Strong/Moderate/Minimal to Very sure/Fairly sure/Not sure yet; other government guides never raise the label; count independent evidence. See DECISIONS.md. | Team | Closed |
-| 13 | Confirm my additions to the label rule: 2+ independent reviews = Very sure; 1 review or 1 study = Fairly sure (from CLAUDE.md). | Viktoriia | Open |
+| 13 | ~~Confirm label rule additions.~~ Decided 2026-11-19, see DECISIONS.md. | Viktoriia | Closed |
+| 14 | Three interpretations of mine on the label rule (disagreement cap applies to the whole label; several small agreeing studies stay at Not sure yet; Phase 2 verifier decides what "contradicts"). See DECISIONS.md. | Viktoriia | Open |

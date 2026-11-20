@@ -10,3 +10,12 @@ Status: accepted (2026-11-19)
 
 ## Why
 Public Records Act and CLAUDE.md rule 4: the record of who admitted a source to the corpus, and why, must exist and be trustworthy. The label must not be guessed by a model.
+
+## Evidence label rules (final, 2026-11-19)
+- WWC practice guides: the guide's own rating per recommendation (Strong / Moderate / Minimal) maps to Very sure / Fairly sure / Not sure yet. Unrated WWC passages never raise the label.
+- Government guides and summaries never raise the label alone.
+- Unrated primary evidence: 2+ independent agreeing reviews/meta-analyses = Very sure; 1 review = Fairly sure; 1 study = Not sure yet unless randomized or >= 1,000 students with a comparison group (Fairly sure).
+- Disagreeing evidence caps the label at Not sure yet and the answer says the research is mixed.
+
+## Known limitation: overlapping evidence (accepted for the PoC)
+Two reviews often cite the same underlying studies, so "independent" is only approximated. The code treats the National Reading Panel and every meta-analysis published before 2001 as one body of evidence (counted once together). Any other overlap between reviews is not detected, so a label can be slightly too confident. A later version could record which primary studies each review includes and count distinct studies.

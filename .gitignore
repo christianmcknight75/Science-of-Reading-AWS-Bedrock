@@ -35,3 +35,5 @@ docs/AWS_SETUP_SAFELY.md
 docs/reference/
 docs/PLAN.md
 docs/DECISIONS.md
+test-results
+playwright-report

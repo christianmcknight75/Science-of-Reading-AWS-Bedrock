@@ -21,7 +21,7 @@ COLUMNS = (
     "source_id, title, authors, year, doi, eric_id, url, pdf_url, license, license_snapshot_url, "
     "attribution, source_type, topics, grades, status, license_checklist, reviewer_notes, "
     "approved_by, approved_at, version, discovered_from, publisher, jurisdiction, priority, "
-    "used_for, curation_status, curation_note"
+    "used_for, curation_status, curation_note, randomized, sample_size, has_comparison_group"
 )
 
 
@@ -48,6 +48,9 @@ class Decision(BaseModel):
     topics: list[str] = []
     grades: list[str] = []
     checklist: Checklist | None = None
+    randomized: bool | None = None
+    sample_size: int | None = Field(default=None, gt=0)
+    has_comparison_group: bool | None = None
 
 
 def _audit_context(conn: Conn, actor: str, reason: str) -> None:
@@ -156,7 +159,8 @@ def decide(source_id: str, body: Decision, reviewer: Admin, conn: Conn) -> dict[
     conn.execute(
         """UPDATE sources SET status='approved', license=COALESCE(%s, license), attribution=%s,
              source_type=COALESCE(%s, source_type), topics=%s, grades=%s,
-             license_checklist=%s::jsonb, reviewer_notes=%s, approved_by=%s, approved_at=now()
+             license_checklist=%s::jsonb, reviewer_notes=%s, approved_by=%s, approved_at=now(),
+             randomized=%s, sample_size=%s, has_comparison_group=%s
            WHERE source_id=%s""",
         (
             body.license,
@@ -167,6 +171,9 @@ def decide(source_id: str, body: Decision, reviewer: Admin, conn: Conn) -> dict[
             c.model_dump_json(),
             body.reviewer_notes,
             reviewer,
+            body.randomized,
+            body.sample_size,
+            body.has_comparison_group,
             source_id,
         ),
     )

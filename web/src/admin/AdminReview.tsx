@@ -26,6 +26,9 @@ function ReviewForm({ source, onDone }: { source: Source; onDone: () => void }) 
   const [license, setLicense] = useState(source.license ?? "");
   const [attribution, setAttribution] = useState("");
   const [notes, setNotes] = useState("");
+  const [randomized, setRandomized] = useState(false);
+  const [comparison, setComparison] = useState(false);
+  const [sampleSize, setSampleSize] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -38,6 +41,9 @@ function ReviewForm({ source, onDone }: { source: Source; onDone: () => void }) 
       await decide(source.source_id, {
         decision,
         reviewer_notes: notes,
+        randomized: decision === "approve" ? randomized : null,
+        has_comparison_group: decision === "approve" ? comparison : null,
+        sample_size: sampleSize ? Number(sampleSize) : null,
         license: license || null,
         attribution: attribution || null,
         checklist:
@@ -137,6 +143,42 @@ function ReviewForm({ source, onDone }: { source: Source; onDone: () => void }) 
         />
         {source.license_snapshot_url && <p>A snapshot is already on file.</p>}
       </div>
+      <fieldset className="space-y-2">
+        <legend className="font-heading font-semibold">
+          6. Study design (only for single studies; used for the evidence label)
+        </legend>
+        <label className="flex min-h-target items-center gap-3">
+          <input
+            type="checkbox"
+            className="h-6 w-6"
+            checked={randomized}
+            onChange={(e) => setRandomized(e.target.checked)}
+          />
+          Randomized
+        </label>
+        <label className="flex min-h-target items-center gap-3">
+          <input
+            type="checkbox"
+            className="h-6 w-6"
+            checked={comparison}
+            onChange={(e) => setComparison(e.target.checked)}
+          />
+          Has a comparison group
+        </label>
+        <div>
+          <label htmlFor="n" className="block">
+            Number of students
+          </label>
+          <input
+            id="n"
+            type="number"
+            min={1}
+            value={sampleSize}
+            onChange={(e) => setSampleSize(e.target.value)}
+            className="min-h-target rounded-lg border border-border px-3"
+          />
+        </div>
+      </fieldset>
       <div>
         <label htmlFor="notes" className="block font-semibold">
           Reviewer notes
