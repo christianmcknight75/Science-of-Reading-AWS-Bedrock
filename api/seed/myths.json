@@ -1,0 +1,44 @@
+[
+  {
+    "myth_id": "myth_three_cueing",
+    "name": "Three-cueing (MSV): guess words from meaning, structure, and visual cues",
+    "cue_patterns": ["three cueing", "three-cueing", "msv", "meaning structure visual", "what would make sense", "look at the picture"],
+    "sor_correction": "Skilled readers identify words by processing the letters and sounds, not by guessing from context. Teach children to decode by mapping letters to sounds and blending.",
+    "passage_ids": []
+  },
+  {
+    "myth_id": "myth_picture_guessing",
+    "name": "Children should guess unknown words from the pictures",
+    "cue_patterns": ["guess from the picture", "guess the word from pictures", "use the pictures to figure out", "picture clues for words"],
+    "sor_correction": "Pictures can support meaning and vocabulary, but beginners should work out words by decoding the print, so the habit of guessing does not replace sounding out.",
+    "passage_ids": []
+  },
+  {
+    "myth_id": "myth_learning_styles",
+    "name": "Children learn to read best through their own learning style (visual, auditory, kinesthetic)",
+    "cue_patterns": ["learning style", "learning styles", "visual learner", "auditory learner", "kinesthetic learner"],
+    "sor_correction": "Matching reading instruction to a child's preferred learning style has not been shown to improve outcomes. Explicit, systematic instruction helps all beginners, and multisensory activities can be used as engagement tools.",
+    "passage_ids": []
+  },
+  {
+    "myth_id": "myth_leveled_only",
+    "name": "Beginning readers should only read leveled texts matched to a reading level",
+    "cue_patterns": ["leveled text", "leveled readers", "guided reading level", "reading level letter"],
+    "sor_correction": "Beginners need practice with text that matches the phonics they have been taught (decodable text). Leveled text often relies on pictures and repeated patterns that invite guessing.",
+    "passage_ids": []
+  },
+  {
+    "myth_id": "myth_natural_reading",
+    "name": "Children will learn to read naturally if they are surrounded by books",
+    "cue_patterns": ["learn to read naturally", "immersed in books", "reading is natural", "just surround them with books"],
+    "sor_correction": "Learning to speak is natural; learning to read print is not. Most children need explicit, systematic teaching of how letters represent sounds. Rich book experiences still build vocabulary and knowledge.",
+    "passage_ids": []
+  },
+  {
+    "myth_id": "myth_dyslexia_reversal",
+    "name": "Dyslexia means seeing letters or words backwards",
+    "cue_patterns": ["seeing letters backwards", "sees words backwards", "dyslexia reversal", "letters jump around"],
+    "sor_correction": "Dyslexia is mainly a difficulty with phonological processing and word reading, not a visual problem. Reversals are common in all beginners and are not a reliable sign.",
+    "passage_ids": []
+  }
+]
