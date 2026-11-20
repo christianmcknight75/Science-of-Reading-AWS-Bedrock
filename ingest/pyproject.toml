@@ -1,0 +1,40 @@
+[project]
+name = "sor-ingest"
+version = "0.1.0"
+description = "Reading Helper ingestion pipeline"
+requires-python = ">=3.12"
+dependencies = ["psycopg[binary]>=3.2", "pymupdf>=1.24", "boto3>=1.35"]
+
+[project.scripts]
+sor-ingest = "sor_ingest.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.11", "boto3-stubs>=1.35"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["source_search"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+exclude = ["source_search"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "source_search"]
+
+[tool.setuptools]
+packages = ["sor_ingest"]
+
+[[tool.mypy.overrides]]
+module = ["fitz", "source_search"]
+ignore_missing_imports = true
+follow_imports = "skip"
