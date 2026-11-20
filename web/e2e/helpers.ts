@@ -48,17 +48,23 @@ export async function expectFooter(page: Page) {
   await expect(page.getByText(/Content last updated:/)).toBeVisible();
 }
 
-export async function fast(page: Page) {
-  await page.addInitScript(() => {
-    (window as unknown as { __MOCK_DELAY__: number }).__MOCK_DELAY__ = 0;
+/** Mock accounts (src/api/mockAuth.ts): user 1 = demo teacher, user 2 = demo admin. */
+export async function seed(page: Page, opts: { delay: number; as: "teacher" | "admin" | null }) {
+  await page.addInitScript((o) => {
+    (window as unknown as { __MOCK_DELAY__: number }).__MOCK_DELAY__ = o.delay;
+    // Seed once per tab, not on every reload, so sign-out stays signed out.
+    if (window.sessionStorage.getItem("rh-seeded")) return;
+    window.sessionStorage.setItem("rh-seeded", "1");
     window.localStorage.clear();
-  });
+    if (o.as) window.sessionStorage.setItem("rh-token", o.as === "admin" ? "mock.2" : "mock.1");
+  }, opts);
 }
 
-/** Keep the mock slow enough to look at the loading state. */
-export async function slow(page: Page) {
-  await page.addInitScript(() => {
-    (window as unknown as { __MOCK_DELAY__: number }).__MOCK_DELAY__ = 60000;
-    window.localStorage.clear();
-  });
-}
+/** Signed in as the demo teacher, instant mock API. */
+export const fast = (page: Page) => seed(page, { delay: 0, as: "teacher" });
+/** Signed in as the demo administrator. */
+export const asAdmin = (page: Page) => seed(page, { delay: 0, as: "admin" });
+/** Not signed in. */
+export const anon = (page: Page) => seed(page, { delay: 0, as: null });
+/** Signed in, and the mock API never answers: lets us look at loading states. */
+export const slow = (page: Page) => seed(page, { delay: 60000, as: "teacher" });

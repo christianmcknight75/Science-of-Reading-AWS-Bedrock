@@ -95,6 +95,7 @@ export function Mascot({
       width={size}
       height={(size * 120) / 130}
       className={className}
+      data-testid="mascot"
       aria-hidden="true"
       focusable="false"
     >

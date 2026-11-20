@@ -164,3 +164,44 @@ export class ApiError extends Error {
     super(message);
   }
 }
+
+// ---------------------------------------------------------------- Accounts
+// Matches ../Science-of-Reading-AWS-Bedrock/docs/API_CONTRACT.md "Accounts (closed access)".
+// Server models (api/app/accounts.py) were not written yet when this was built.
+export type Role = "teacher" | "admin";
+
+export interface Me {
+  user_id: number | string;
+  name: string;
+  email: string;
+  district: string;
+  role: Role;
+  status: "active" | "disabled";
+}
+export interface SignInResult {
+  access_token: string;
+  token_type: "Bearer";
+  expires_in: number;
+  user: Me;
+}
+export interface RequestAccessBody {
+  name: string;
+  email: string;
+  district: string; // district or school
+}
+export type RequestStatus = "pending" | "approved" | "denied";
+export interface AccessRequest {
+  request_id: number | string;
+  name: string;
+  email: string;
+  district: string;
+  status: RequestStatus;
+  requested_at: string;
+  decided_by: string | null;
+  decided_at: string | null;
+  decision_reason: string | null;
+}
+export interface ApproveResult {
+  user_id: number | string;
+  invite_code: string; // shown to the admin once; production emails it instead
+}

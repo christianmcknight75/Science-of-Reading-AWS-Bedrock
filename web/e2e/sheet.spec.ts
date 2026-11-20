@@ -1,6 +1,8 @@
 import { test } from "@playwright/test";
+import { fast } from "./helpers";
 test("mascot sheet", async ({ page }) => {
   test.skip(!process.env.SHOTS, "on demand");
+  await fast(page);
   await page.setViewportSize({ width: 820, height: 700 });
   await page.goto("/#/design");
   await page.waitForSelector('[data-testid="options"]');

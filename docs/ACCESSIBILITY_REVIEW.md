@@ -31,3 +31,17 @@ on navigation, dialog traps focus and closes with Escape, reduced motion honored
 | D | Class board has no keyboard shortcuts (arrows) | Minor | Buttons are 64px and operable |
 | E | High-contrast mode verified by axe on Home only | Minor | Extend the check to every screen |
 | F | No automated check of 200% browser zoom besides the 320px reflow test | Minor | Equivalent per 1.4.10 |
+
+## v2 redesign addendum (2026-11-20)
+Re-checked after the redesign, sign-in and motion work. Playwright + axe: 0 serious/critical on all 14 screens and the
+6 public screens at 1280px and 375px (136 tests); 320px reflow at extra-large text on 10 screens.
+New surfaces, measured: ink on cream 14.5:1, muted on cream 6.6:1, muted on tint 6.3:1, links on tint 7.3:1,
+notice text on cream 10.5:1; non-text: "Idea" border on cream 4.7:1, primary border on tint 7.3:1 (needs 3:1).
+Forms follow the GOV.UK pattern: labels above fields, hints and errors tied with `aria-describedby`, an error summary
+that takes focus and links to each field, `autocomplete` tokens (username, current-password, new-password, one-time-code),
+one sign-in failure message that does not say which part was wrong, a show/hide password button with `aria-pressed`.
+Admin tabs use the ARIA tab pattern with arrow keys. Motion: entrances, hover lift, panel slide and mascot animation
+all stop under `prefers-reduced-motion` and the in-app switch (tested); none of it carries meaning.
+Note: tests run with reduced motion on (axe otherwise samples colors mid-fade); a dedicated test turns motion on and
+checks the animation exists. **Still not done: a real screen-reader pass.** Also check by eye: the sticky header at
+200% zoom does not cover focused fields (it is ~64px tall; `scroll-padding-top` is not set yet).

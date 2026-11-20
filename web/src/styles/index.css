@@ -250,3 +250,8 @@ main .rh-card:nth-child(n + 5) {
 .wren-dot {
   animation: wren-dot 1.4s ease-in-out infinite;
 }
+
+/* sticky header (~64px): keep focused fields and anchors from hiding under it (WCAG 2.4.11 intent) */
+html {
+  scroll-padding-top: 5rem;
+}

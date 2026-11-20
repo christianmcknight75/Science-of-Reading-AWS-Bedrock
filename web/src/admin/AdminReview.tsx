@@ -326,8 +326,10 @@ export default function AdminReview() {
   };
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
-      <h1 className="text-2xl font-semibold">Source review queue</h1>
+    <section aria-labelledby="source-queue">
+      <h2 id="source-queue" className="font-heading text-2xl font-semibold">
+        Source review queue
+      </h2>
       <p className="text-muted">
         Only approved sources with a completed license record enter the research library.
       </p>
@@ -389,6 +391,6 @@ export default function AdminReview() {
           ) : null}
         </div>
       </div>
-    </main>
+    </section>
   );
 }

@@ -82,4 +82,35 @@ Home greeting, loading, no-research and other empty states, sign-in, and first-t
 answer, a citation, a source list or the evidence label. Decorative SVGs are `aria-hidden`.
 
 ## 4. Mascot
-MASCOT_SECTION_PLACEHOLDER
+Three original options, all simple geometric shapes, built from our navy, cream and the one golden accent. None is
+based on an existing character or brand.
+
+![The three mascot options](mascot/options.png)
+
+| Option | Idea | Verdict |
+|---|---|---|
+| **A. Wren** | A small round bird holding an open book. Beak and feet use the golden accent. | **Chosen.** A bird has a head (tilts), eyes (look up, right, down) and a wing (points), so it can show states with very few shapes. The book ties it to reading. Grown-up because it is calm and muted: no big grin, no saturated colors. |
+| B. Ribbon | A bookmark creature with a notched bottom and a small smile. | Charming but it has no limbs or head to tilt, so it cannot point or look puzzled. Good as a small icon. |
+| C. Stack | The logo's stacked bars with eyes. | Strong brand tie-in, but the shape is too squat to show states, and it would turn our logo into a character. |
+
+### Wren's states
+![Wren idle, thinking, pointing and nothing found](mascot/states.png)
+
+| State | Looks like | Used for |
+|---|---|---|
+| idle | Eyes forward, blinks every ~5 s, bobs 2 px every 4 s | Home greeting, sign-in and other welcome screens |
+| thinking | Head tilted, eyes up, three dots pulse | Loading an answer |
+| pointing | Wing raised toward the content | Tips and onboarding (forgot-password help) |
+| nothing found | Head tilted the other way, raised inner brows, empty open book | "No research found" and other empty states |
+
+Rules, all enforced by tests (`e2e/auth.spec.ts`, "mascot"): decorative only (`aria-hidden`, no alt text needed);
+shown on Home, loading, no-research and the public sign-in screens; **never** inside an answer, the Sources panel,
+a citation or the evidence label; its animations stop under reduced motion. The source is
+`web/src/components/Mascot.tsx`; the options sheet is the dev-only route `#/design`.
+
+## 5. What changed in the UI
+Tokens and depth (`tokens.css`, `index.css`), cards with tones (`plain`, `tint`, `warm`), Home greeting hero,
+sticky header with pill navigation, tinted "Research says" and warm "Idea for your class" surfaces, mascot states,
+motion tokens and the entrance, hover, panel and mascot animations, and the sign-in screens. Nothing was removed:
+all 14 screens, the no-scores rule, the feature flags and the disclaimers are unchanged.
+

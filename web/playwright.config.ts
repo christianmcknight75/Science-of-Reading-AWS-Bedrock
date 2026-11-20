@@ -11,7 +11,7 @@ export default defineConfig({
     {
       // Phone width: teacher screens only. Chromium device emulation (no extra browser needed).
       name: "phone",
-      testMatch: /screens\.spec\.ts/,
+      testMatch: /(screens|auth)\.spec\.ts/,
       use: { ...devices["Pixel 5"], viewport: { width: 375, height: 812 } },
     },
   ],

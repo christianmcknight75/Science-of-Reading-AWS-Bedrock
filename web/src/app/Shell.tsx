@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { CONTENT_LAST_UPDATED, DISCLAIMER, IS_MOCK } from "../api";
 import { Icon, Logo } from "../components/Icon";
+import { useAuth } from "./auth";
 import { flags } from "./flags";
-import { Link, useLocation } from "./router";
+import { Link, navigate, useLocation } from "./router";
 
 function formatDate(iso: string) {
   const d = new Date(`${iso}T12:00:00`);
@@ -43,8 +44,18 @@ export function Footer({ compact = false }: { compact?: boolean }) {
   );
 }
 
-export function Shell({ children, board = false }: { children: ReactNode; board?: boolean }) {
+export function Shell({
+  children,
+  board = false,
+  bare = false,
+}: {
+  children: ReactNode;
+  board?: boolean;
+  /** public pages (sign in etc.): logo only, no navigation */
+  bare?: boolean;
+}) {
   const { path } = useLocation();
+  const { user, signOut } = useAuth();
   const at = (p: string) => (p === "/" ? path === "/" : path.startsWith(p));
   return (
     <div className="flex min-h-screen flex-col">
@@ -68,30 +79,53 @@ export function Shell({ children, board = false }: { children: ReactNode; board?
               <Logo />
               Reading Helper
             </Link>
-            <nav aria-label="Main" className="flex flex-1 flex-wrap items-center gap-1">
-              <NavItem to="/" active={at("/")}>
-                Home
-              </NavItem>
-              <NavItem to="/teaching/groups" active={at("/teaching")}>
-                Teaching
-              </NavItem>
-              {flags.behavior && (
-                <NavItem to="/behavior" active={at("/behavior")}>
-                  Behavior
-                </NavItem>
-              )}
-              <NavItem to="/training" active={at("/training")}>
-                Training
-              </NavItem>
-            </nav>
-            <Link
-              to="/settings"
-              aria-current={at("/settings") ? "page" : undefined}
-              className={`${navLink} gap-2 rounded-full border border-control ${at("/settings") ? "bg-primary text-white" : "bg-surface hover:bg-tint"}`}
-            >
-              <Icon name="sliders" />
-              Text size &amp; read aloud
-            </Link>
+            {bare ? (
+              <span className="flex-1" />
+            ) : (
+              <>
+                <nav aria-label="Main" className="flex flex-1 flex-wrap items-center gap-1">
+                  <NavItem to="/" active={at("/")}>
+                    Home
+                  </NavItem>
+                  <NavItem to="/teaching/groups" active={at("/teaching")}>
+                    Teaching
+                  </NavItem>
+                  {flags.behavior && (
+                    <NavItem to="/behavior" active={at("/behavior")}>
+                      Behavior
+                    </NavItem>
+                  )}
+                  <NavItem to="/training" active={at("/training")}>
+                    Training
+                  </NavItem>
+                  {user?.role === "admin" && (
+                    <NavItem to="/admin" active={at("/admin")}>
+                      Admin
+                    </NavItem>
+                  )}
+                </nav>
+                <Link
+                  to="/settings"
+                  aria-current={at("/settings") ? "page" : undefined}
+                  className={`${navLink} gap-2 rounded-full border border-control ${at("/settings") ? "bg-primary text-white" : "bg-surface hover:bg-tint"}`}
+                >
+                  <Icon name="sliders" />
+                  Text size &amp; read aloud
+                </Link>
+                {user && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await signOut();
+                      navigate("/signin", { signedout: "1" });
+                    }}
+                    className={`${navLink} rounded-full border border-control bg-surface hover:bg-tint`}
+                  >
+                    Sign out
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </header>
       )}

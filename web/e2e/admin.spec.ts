@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type Route } from "@playwright/test";
+import { asAdmin } from "./helpers";
 
 const base = {
   authors: [],
@@ -45,6 +46,7 @@ const audit = [
 ];
 
 async function mockApi(page: Page, reopened: string[] = []) {
+  await asAdmin(page); // the admin page needs an admin session
   await page.route("http://localhost:8000/**", async (route: Route) => {
     const req = route.request();
     const headers = {
@@ -129,6 +131,7 @@ test("re-open panel needs a reason, saves it, and has no serious accessibility p
 });
 
 test("error message is announced and accessible", async ({ page }) => {
+  await asAdmin(page);
   await page.route("http://localhost:8000/**", (route) =>
     route.fulfill({
       status: 503,
