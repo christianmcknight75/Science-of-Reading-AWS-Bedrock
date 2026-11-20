@@ -129,11 +129,17 @@ class RequestAccess(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     email: str
     district: str = Field(min_length=1, max_length=120)
+    job_role: str | None = Field(default=None, max_length=60)  # e.g. "Reading coach"; info only
 
     @field_validator("email")
     @classmethod
     def _email(cls, v: str) -> str:
         return _norm_email(v)
+
+    @field_validator("job_role")
+    @classmethod
+    def _job(cls, v: str | None) -> str | None:
+        return (v.strip() or None) if v else None
 
     @field_validator("name", "district")
     @classmethod
@@ -149,6 +155,7 @@ class AccessRequestOut(BaseModel):
     name: str
     email: str
     district: str
+    job_role: str | None = None
     status: str
     requested_at: datetime
     decided_by: str | None
@@ -243,8 +250,8 @@ def request_access(body: RequestAccess, request: Request, s: Cfg, conn: Conn) ->
     ).fetchone()
     if not known:
         conn.execute(
-            "INSERT INTO access_requests (name, email, district) VALUES (%s, %s, %s)",
-            (body.name, body.email, body.district),
+            "INSERT INTO access_requests (name, email, district, job_role) VALUES (%s, %s, %s, %s)",
+            (body.name, body.email, body.district, body.job_role),
         )
     return {
         "message": "Thanks. If your school email can be added, an administrator will be in touch."
@@ -343,7 +350,7 @@ def list_requests(
     _: Admin, conn: Conn, status: Literal["pending", "approved", "denied"] = "pending"
 ) -> list[dict[str, Any]]:
     return conn.execute(
-        """SELECT request_id, name, email, district, status, requested_at, decided_by,
+        """SELECT request_id, name, email, district, job_role, status, requested_at, decided_by,
                   decided_at, decision_reason
            FROM access_requests WHERE status = %s ORDER BY requested_at""",
         (status,),
