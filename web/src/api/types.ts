@@ -82,6 +82,7 @@ export interface PlanStep {
   sounds?: string[];
   story?: string[]; // words of a decodable story
   tip?: string;
+  alt?: { title: string; body: string }; // what "Swap this step" shows instead
 }
 
 export interface GroupPlan extends Marked {

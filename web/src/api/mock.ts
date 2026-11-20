@@ -351,11 +351,21 @@ const PLANS: Record<Skill, { why: string; steps: (sounds: string[]) => PlanStep[
       S("Robot Talk", 4, "Say each sound, then: Everyone, on my tap... what word?", {
         words: ["sat", "pin", "fan", "mad", "tip", "dim"],
         tip: "Keeps kids with you: everyone answers on your tap, so no one shouts out and no one hides.",
+        alt: {
+          title: "Sound slides",
+          body: "Slide a finger under the letters as you say each sound slowly, then say the word fast. Kids copy you.",
+        },
       }),
       S(
         "Write it",
         3,
         "Say a word. Kids tap the sounds, then write one letter per box: pat, fin, sad.",
+        {
+          alt: {
+            title: "Build it",
+            body: "Say a word. Kids push letter tiles into boxes, one tile per sound: pat, fin, sad.",
+          },
+        },
       ),
       S("Read a story they can sound out", 4, "Read it together, then once more with partners.", {
         story: "Sam and Pam sat. Pam had a map. Sam had a fan. Pam and Sam sat in the sand.".split(
@@ -381,6 +391,12 @@ const PLANS: Record<Skill, { why: string; steps: (sounds: string[]) => PlanStep[
         "Sound boxes",
         4,
         "Draw one box per sound. Kids push a counter into a box for each sound, then add letters.",
+        {
+          alt: {
+            title: "Finger tapping",
+            body: "Say a word. Kids tap one finger per sound on the table, then say the word.",
+          },
+        },
       ),
       S("Say it fast", 2, "Say the sounds slowly, kids say the word fast: m-a-p... map!", {
         words: ["map", "sit", "pin"],
@@ -405,6 +421,10 @@ const PLANS: Record<Skill, { why: string; steps: (sounds: string[]) => PlanStep[
         'Sort word cards into "s" and "sh" piles. Kids say the first sound before they sort.',
         {
           words: ["sip", "ship", "sell", "shell", "sop", "shop"],
+          alt: {
+            title: "Mix and match",
+            body: "Hold up a card. Kids say the word, then whisper the sound they heard first.",
+          },
         },
       ),
       S("Read a story they can sound out", 3, "Read it together, then once more with partners.", {

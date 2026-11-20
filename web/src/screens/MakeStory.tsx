@@ -3,24 +3,12 @@ import { makeStory } from "../api";
 import { PageTitle } from "../app/router";
 import { AddToGroup } from "../components/AddToGroup";
 import { Icon } from "../components/Icon";
+import { checkStory, MarksLegend, StoryText } from "../components/StoryText";
 import { TeachingNav } from "../components/TeachingNav";
 import { Badge, Button, Card, ErrorMessage, ExampleChip, ToggleChip } from "../components/ui";
-import { ALL_SOUNDS, checkWord, type WordStatus } from "../lib/decode";
+import { ALL_SOUNDS } from "../lib/decode";
 import { useTaughtSounds } from "../lib/groups";
 import { useAsync } from "../lib/useAsync";
-
-// Word marks use shape as well as color: solid underline = can sound out, dotted = tricky word,
-// boxed = uses a sound they don't know yet. Screen readers get the same words in text.
-const MARK: Record<WordStatus, string> = {
-  ok: "border-b-4 border-primary",
-  tricky: "border-b-4 border-dotted border-idea",
-  unknown: "rounded border-2 border-idea bg-notice-bg px-1 text-notice-text",
-};
-const SR: Record<WordStatus, string> = {
-  ok: "",
-  tricky: " (tricky word, teach first)",
-  unknown: " (uses a sound they don't know yet)",
-};
 
 export default function MakeStory() {
   const [taught, setTaught] = useTaughtSounds();
@@ -32,16 +20,7 @@ export default function MakeStory() {
     `story${n}`,
   );
 
-  const checked = (data?.words ?? []).map((w) => ({ w, status: checkWord(w, known) }));
-  const count = (s: WordStatus) => checked.filter((c) => c.status === s).length;
-  const tricky = [
-    ...new Set(
-      checked
-        .filter((c) => c.status === "tricky")
-        .map((c) => c.w.replace(/[^A-Za-z]/g, "").toLowerCase()),
-    ),
-  ];
-  const unknown = count("unknown");
+  const { tricky, unknown } = checkStory(data?.words ?? [], known);
 
   const toggle = (g: string) =>
     setTaught(known.has(g) ? taught.filter((x) => x !== g) : [...taught, g]);
@@ -128,39 +107,12 @@ export default function MakeStory() {
                 )}
               </div>
             </div>
-            <p className="mt-4 font-body text-3xl leading-[2.6rem]" data-testid="story">
-              {checked.map(({ w, status }, i) => (
-                <span key={i}>
-                  <span className={`inline-block pb-0.5 ${MARK[status]}`} data-status={status}>
-                    {w}
-                    <span className="sr-only">{SR[status]}</span>
-                  </span>{" "}
-                </span>
-              ))}
-            </p>
-            <ul
-              className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted"
-              aria-label="What the marks mean"
-            >
-              <li className="flex items-center gap-2">
-                <span aria-hidden="true" className="inline-block w-6 border-b-4 border-primary" />{" "}
-                can sound out
-              </li>
-              <li className="flex items-center gap-2">
-                <span
-                  aria-hidden="true"
-                  className="inline-block w-6 border-b-4 border-dotted border-idea"
-                />{" "}
-                tricky word: teach first
-              </li>
-              <li className="flex items-center gap-2">
-                <span
-                  aria-hidden="true"
-                  className="inline-block h-4 w-4 rounded border-2 border-idea bg-notice-bg"
-                />{" "}
-                uses a sound they don&apos;t know yet
-              </li>
-            </ul>
+            <div className="mt-4">
+              <StoryText words={data.words} known={known} />
+            </div>
+            <div className="mt-3">
+              <MarksLegend />
+            </div>
             <p role="status" className="mt-3">
               {unknown > 0
                 ? "This story uses a sound your kids don't know yet, so it can't be printed or added to a plan. Make a new story to get one that fits."

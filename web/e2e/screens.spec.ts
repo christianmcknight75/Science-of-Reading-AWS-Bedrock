@@ -11,6 +11,8 @@ import {
 // Every screen: heading, footer, 0 serious/critical axe issues, 48px targets, no sideways scroll.
 const SCREENS: { name: string; hash: string; h1: string | RegExp }[] = [
   { name: "Home", hash: "#/", h1: "What do you want to work on?" },
+  { name: "Tomorrow's groups", hash: "#/teaching/groups", h1: "Tomorrow's small groups" },
+  { name: "Group plan", hash: "#/teaching/groups/g-b", h1: /Group B · 15 minutes/ },
   { name: "Make a story", hash: "#/teaching/story", h1: "Make a story they can read" },
   {
     name: "Answer",
@@ -183,4 +185,73 @@ test("Make a story: a new story that fits the sounds can be added to a group's p
   await page.getByRole("button", { name: "Add to a group's plan" }).click();
   await page.getByRole("button", { name: "Add", exact: true }).click();
   await expect(page.getByText(/Added to Group A/)).toBeVisible();
+});
+
+test("Tomorrow's groups: free-text labels, no student names or scores", async ({ page }) => {
+  await fast(page);
+  await page.goto("/#/teaching/groups");
+  await expect(page.getByText(/Last quick check|of 5 words/)).toHaveCount(0);
+  await page.getByRole("button", { name: "Edit Group C" }).click();
+  await expect(page.getByText(/don't use student names/i)).toBeVisible();
+  await page.getByLabel("Group label").fill("Blue table");
+  await expectNoSeriousViolations(page);
+  await expectTargets(page);
+  await page.getByRole("button", { name: "Save group" }).click();
+  await expect(page.getByRole("heading", { name: "Blue table" })).toBeVisible();
+  // the label survives a reload (stored on this device only)
+  await page.addInitScript(() => undefined);
+});
+
+test("Tomorrow's groups: sounds can be changed and the choice is kept", async ({ page }) => {
+  await fast(page);
+  await page.goto("/#/teaching/groups");
+  await page.getByRole("button", { name: "Change" }).click();
+  const ch = page.getByRole("button", { name: "ch", exact: true });
+  await expect(ch).toHaveAttribute("aria-pressed", "false");
+  await ch.click();
+  await expect(ch).toHaveAttribute("aria-pressed", "true");
+  await expectNoSeriousViolations(page);
+  await page.getByRole("button", { name: "Done" }).click();
+  await expect(page.getByRole("list", { name: "Learned sounds" })).toContainText("ch");
+});
+
+test("Group plan: research is separate from the idea, steps can be swapped, no scores", async ({
+  page,
+}) => {
+  await fast(page);
+  await page.goto("/#/teaching/groups/g-b");
+  await expect(page.getByRole("heading", { name: "Research says" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Idea for your class" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Robot Talk/ })).toBeVisible();
+  await page.getByRole("button", { name: /Swap this step: Robot Talk/ }).click();
+  await expect(page.getByRole("heading", { name: /Sound slides/ })).toBeVisible();
+  // quick check has no 0-5 tally buttons: we never record how a group did
+  await expect(page.getByRole("button", { name: /^[0-5]$/ })).toHaveCount(0);
+  await expect(
+    page.getByText(/Every word uses sounds|Checked: every word uses sounds/),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: /^Source 1:/ })
+    .first()
+    .click();
+  await expect(page.getByRole("dialog", { name: "Sources" })).toBeVisible();
+  await expectNoSeriousViolations(page);
+});
+
+test("Group plan: switching groups changes the plan", async ({ page }) => {
+  await fast(page);
+  await page.goto("/#/teaching/groups/g-b");
+  await page
+    .getByRole("navigation", { name: "Switch group" })
+    .getByRole("link", { name: "Group A" })
+    .click();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Group A");
+  await expect(page.getByText(/two letters can make one sound|sh, ch/i).first()).toBeVisible();
+});
+
+test("Group plan: unknown group says so kindly", async ({ page }) => {
+  await fast(page);
+  await page.goto("/#/teaching/groups/nope");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("We couldn't find that group");
+  await expectNoSeriousViolations(page);
 });
