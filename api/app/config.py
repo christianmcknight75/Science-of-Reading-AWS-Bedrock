@@ -24,6 +24,8 @@ class Settings(BaseSettings):
 
     # Q&A engine. The kill switch is OFF until Viktoriia approves live model calls.
     qa_enabled: bool = False
+    llm_mode: str = "bedrock"  # "fake" = local stand-in model (never with Cognito auth)
+    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"  # comma separated
     aws_profile: str = ""  # local dev only (sor-dev); empty = default credential chain
     guardrail_id: str = ""  # Bedrock Guardrail (PII + denied topics); empty = not attached yet
     guardrail_version: str = "DRAFT"

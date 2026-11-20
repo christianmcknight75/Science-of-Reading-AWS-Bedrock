@@ -15,6 +15,7 @@ from .config import Settings, get_settings
 from .db import get_conn
 from .embedding import QueryEmbedder, get_query_embedder
 from .engine import Engine
+from .fake_llm import LocalFakeLLM
 from .llm import LLM, BedrockLLM
 from .ratelimit import RateLimiter
 from .redact import Redactor, get_redactor
@@ -29,6 +30,10 @@ def _limiter(max_per_minute: int) -> RateLimiter:
 
 
 def get_llm(s: Annotated[Settings, Depends(get_settings)]) -> LLM:
+    if s.llm_mode == "fake":
+        if s.auth_mode == "cognito":  # a stand-in model must never sit behind real sign-in
+            raise HTTPException(503, "The fake model is for local development only.")
+        return LocalFakeLLM()
     return BedrockLLM(
         region=modelconfig.region(),
         profile=s.aws_profile,
