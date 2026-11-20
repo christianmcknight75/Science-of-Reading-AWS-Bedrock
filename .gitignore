@@ -2,11 +2,36 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .venv/
 venv/
 
-# Secrets - never commit API keys
-.env
+# Node
+node_modules/
+web/dist/
 
-# Local search output
+# Secrets - never commit keys, env files, or credentials
+.env
+.env.*
+!.env.example
+*.pem
+credentials*
+.aws/
+
+# Local data and search output
 results*.json
+data/local/
+*.sqlite
+
+# CDK
+cdk.out/
+infra/.venv/
+
+# Team-private working files (Claude's context only; not for the public repo)
+CLAUDE.md
+.claude/
+docs/AWS_SETUP_SAFELY.md
+docs/reference/
+docs/PLAN.md
+docs/DECISIONS.md
