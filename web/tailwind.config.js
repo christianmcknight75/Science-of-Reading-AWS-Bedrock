@@ -9,6 +9,8 @@ export default {
         ink: "var(--color-ink)",
         muted: "var(--color-muted)",
         border: "var(--color-border)",
+        control: "var(--color-control-border)",
+        idea: "var(--color-idea)",
         primary: { DEFAULT: "var(--color-primary)", hover: "var(--color-primary-hover)" },
         highlight: "var(--color-highlight)",
         "notice-bg": "var(--color-notice-bg)",

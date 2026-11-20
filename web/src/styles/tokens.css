@@ -5,6 +5,8 @@
   --color-ink: #15233a;
   --color-muted: #4a5872;
   --color-border: #d9dfea;
+  --color-control-border: #66728a; /* 4.8:1 on white: boundary of buttons and fields */
+  --color-idea: #8a6a00; /* border of the "Idea for your class" card */
   --color-primary: #1f4e8c;
   --color-primary-hover: #163a69;
   --color-highlight: #f5c842;

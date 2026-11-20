@@ -1,3 +1,94 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ---- Accessibility and display settings ------------------------------------------------ */
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+html[data-contrast="high"] :focus-visible {
+  outline-color: #000;
+  box-shadow: 0 0 0 5px #fff;
+}
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 0.5rem;
+  font-weight: 700;
+}
+.skip-link:focus {
+  top: 0.5rem;
+}
+html[data-text-size="large"] {
+  font-size: 20px;
+}
+html[data-text-size="xl"] {
+  font-size: 24px;
+}
+html[data-contrast="high"] {
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-ink: #000000;
+  --color-muted: #1a1a1a;
+  --color-border: #000000;
+  --color-control-border: #000000;
+  --color-idea: #000000;
+  --color-primary: #0a2a5a;
+  --color-primary-hover: #000000;
+  --color-notice-bg: #ffffff;
+  --color-notice-text: #000000;
+}
+html[data-contrast="high"] .rh-card {
+  border-width: 2px;
+  border-color: #000;
+}
+mark.rh-quote {
+  background: var(--color-highlight);
+  color: #15233a;
+  padding: 0.05em 0.15em;
+  border-radius: 0.2em;
+}
+html[data-contrast="high"] mark.rh-quote {
+  background: #000;
+  color: #fff;
+}
+/* Respect the OS setting and the in-app setting */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+html[data-motion="reduce"] * {
+  animation-duration: 0.001ms !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+@keyframes rh-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.rh-pulse {
+  animation: rh-pulse 1.6s ease-in-out infinite;
+}
+/* Printing an idea or a plan: only the content, no navigation */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  html {
+    background: #fff;
+  }
+}
