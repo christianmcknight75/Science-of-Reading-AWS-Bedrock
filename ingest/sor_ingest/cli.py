@@ -18,6 +18,7 @@ from .chunking import chunk_blocks
 from .curated import load_curated
 from .embedder import get_embedder
 from .parse import parse_pdf
+from .ratings import annotate_recommendations
 
 PDF_DIR = Path(os.environ.get("SOR_PDF_DIR", "data/local/pdfs"))
 
@@ -70,14 +71,19 @@ def cmd_process(args: argparse.Namespace) -> int:
     embedder = get_embedder(args.embedder)
     done = 0
     with store.connect() as conn:
-        for source_id, pdf_url in store.approved_unprocessed(conn):
+        for source_id, pdf_url, rated in store.approved_unprocessed(conn):
             pdf = PDF_DIR / f"{source_id}.pdf"
             if not pdf.exists():
                 if not pdf_url:
                     print(f"{source_id}: no pdf_url and no local file; skipping")
                     continue
                 _download(pdf_url, pdf)
-            passages = chunk_blocks(source_id, parse_pdf(pdf))
+            blocks = parse_pdf(pdf)
+            if rated:
+                blocks = annotate_recommendations(blocks)
+            passages = chunk_blocks(source_id, blocks)
+            if rated and not any(p.evidence_rating for p in passages):
+                print(f"WARNING {source_id}: no evidence ratings found; treated as 'Not sure yet'")
             n = store.upsert_passages(
                 conn, source_id, passages, [embedder.embed(p.text) for p in passages]
             )

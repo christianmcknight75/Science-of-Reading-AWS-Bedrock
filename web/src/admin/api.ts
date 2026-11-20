@@ -63,3 +63,27 @@ export async function decide(id: string, body: Record<string, unknown>): Promise
     )
   ).json();
 }
+
+export interface AuditEntry {
+  ts: string;
+  actor: string;
+  from_status: string | null;
+  to_status: string;
+  reason: string;
+}
+
+export async function reopen(id: string, reason: string): Promise<Source> {
+  return (
+    await check(
+      await fetch(`${API_URL}/admin/sources/${id}/reopen`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      }),
+    )
+  ).json();
+}
+
+export async function getAudit(id: string): Promise<AuditEntry[]> {
+  return (await check(await fetch(`${API_URL}/admin/sources/${id}/audit`))).json();
+}

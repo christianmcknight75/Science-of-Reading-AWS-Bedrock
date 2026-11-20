@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import dataclass
 
 MIN_WORDS = 300
@@ -15,6 +16,8 @@ class Block:
     text: str
     page: int
     section: str | None = None
+    recommendation: str | None = None
+    evidence_rating: str | None = None
 
 
 @dataclass(frozen=True)
@@ -23,6 +26,12 @@ class Passage:
     section: str | None
     page: int
     text: str
+    recommendation: str | None = None
+    evidence_rating: str | None = None
+
+
+def _key(b: Block) -> tuple[str | None, str | None, str | None]:
+    return (b.section, b.recommendation, b.evidence_rating)
 
 
 def _words(text: str) -> int:
@@ -36,7 +45,7 @@ def _split_long(block: Block) -> list[Block]:
         return [block]
     pieces = []
     for i in range(0, len(words), MAX_WORDS):
-        pieces.append(Block(" ".join(words[i : i + MAX_WORDS]), block.page, block.section))
+        pieces.append(dataclasses.replace(block, text=" ".join(words[i : i + MAX_WORDS])))
     return pieces
 
 
@@ -53,7 +62,7 @@ def chunk_blocks(source_id: str, blocks: list[Block]) -> list[Passage]:
     count = 0
     for piece in pieces:
         n = _words(piece.text)
-        section_changed = bool(current) and piece.section != current[0].section
+        section_changed = bool(current) and _key(piece) != _key(current[0])
         if current and (section_changed or count + n > MAX_WORDS):
             groups.append(current)
             current, count = [], 0
@@ -66,7 +75,7 @@ def chunk_blocks(source_id: str, blocks: list[Block]) -> list[Passage]:
         prev = groups[-1] if groups else None
         if (
             prev
-            and prev[0].section == current[0].section
+            and _key(prev[0]) == _key(current[0])
             and sum(_words(b.text) for b in prev) + count <= MAX_WORDS
         ):
             prev.extend(current)
@@ -81,6 +90,8 @@ def chunk_blocks(source_id: str, blocks: list[Block]) -> list[Passage]:
                 section=group[0].section,
                 page=group[0].page,
                 text="\n\n".join(b.text for b in group),
+                recommendation=group[0].recommendation,
+                evidence_rating=group[0].evidence_rating,
             )
         )
     return passages

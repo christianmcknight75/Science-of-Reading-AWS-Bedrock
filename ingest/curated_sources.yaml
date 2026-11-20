@@ -63,7 +63,8 @@ sources:
     source_type: practice_guide
     priority: 1
     used_for: [training, activities, refreshers]
-    note: "Built exactly for 'PD into practice'. Includes activity videos on syllables, rhyme, compound words, sentence segmentation, morphology. Ingest the PDFs; link the videos, don't ingest them."
+    evidence_role: summary
+    note: "team intends to include; awaiting Aidan's license sign-off. Built exactly for 'PD into practice'. Includes activity videos on syllables, rhyme, compound words, sentence segmentation, morphology. Ingest the PDFs; link the videos, don't ingest them."
 
   - id: rel_midwest_pa_phonics_rubric_2021
     title: "Phonological Awareness and Phonics Instructional Rubric"
@@ -77,6 +78,7 @@ sources:
     priority: 1
     used_for: [lesson_check]
     note: "Use for lesson-plan feedback only. The rubric itself says it is not for teacher evaluation."
+    evidence_role: summary
 
   - id: rel_se_materials_rubric_2017
     title: "Rubric for Evaluating Reading/Language Arts Instructional Materials for Kindergarten to Grade 5 (REL 2017-219)"
@@ -89,6 +91,7 @@ sources:
     source_type: practice_guide
     priority: 2
     used_for: [lesson_check, story_quality]
+    evidence_role: summary
 
   - id: wwc_family_teacher_guides_2021
     title: "Kindergarten / First / Second / Third Grade Teacher's Guide to Supporting Family Involvement in Foundational Reading Skills"
@@ -101,6 +104,7 @@ sources:
     source_type: practice_guide
     priority: 2
     used_for: [activities, family_notes]
+    evidence_role: summary
 
   - id: put_reading_first_k3
     title: "Put Reading First: The Research Building Blocks for Teaching Children to Read, Kindergarten Through Grade 3 (3rd ed.)"
@@ -114,13 +118,14 @@ sources:
     foundational_allow_list: true
     priority: 1
     used_for: [qa, training, refreshers]
-    note: "Teacher-friendly K–3 summary of the NRP: phonemic awareness, phonics, fluency, vocabulary, comprehension. Written by CIERA under a federal award, so Aidan should confirm it's public domain."
+    note: "team intends to include; awaiting Aidan's license sign-off. Teacher-friendly K–3 summary of the NRP: phonemic awareness, phonics, fluency, vocabulary, comprehension. Written by CIERA under a federal award, so Aidan should confirm it's public domain."
+    evidence_role: summary   # summarizes the NRP; supports an answer but does not raise the label
 
   - id: ies_reading_comprehension_k3_2010
     title: "Improving Reading Comprehension in Kindergarten Through 3rd Grade (NCEE 2010-4038)"
     publisher: "What Works Clearinghouse, IES"
     year: 2010
-    url: "TODO: find on the WWC Practice Guides page"
+    url: "https://ies.ed.gov/ncee/wwc/practiceguide/14"
     license: "public-domain (U.S. government work)"
     status: ready
     jurisdiction: US
@@ -133,7 +138,7 @@ sources:
     title: "Teaching Academic Content and Literacy to English Learners in Elementary and Middle School (NCEE 2014-4012)"
     publisher: "What Works Clearinghouse, IES"
     year: 2014
-    url: "TODO: find on the WWC Practice Guides page"
+    url: "https://ies.ed.gov/ncee/wwc/practiceguide/19"
     license: "public-domain (U.S. government work)"
     status: ready
     jurisdiction: US
@@ -191,6 +196,7 @@ sources:
     jurisdiction: AU
     source_type: government_guide
     priority: 2
+    note: "team intends to include; awaiting Aidan's license sign-off."
 
   # ---------- Studies already approved through the queue ----------
   - id: brooks_2025_vocab_pa

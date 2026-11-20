@@ -21,7 +21,7 @@ def make_pdf(path: Path) -> None:
 def test_parse_keeps_sections_and_pages(tmp_path: Path) -> None:
     pdf = tmp_path / "a.pdf"
     make_pdf(pdf)
-    blocks = parse_pdf(pdf)
+    blocks = [b for b in parse_pdf(pdf) if b.text]
     assert [(b.section, b.page) for b in blocks] == [("Phonemic Awareness", 1), ("Phonics", 2)]
     ps = chunk_blocks("src_0001", blocks)
     assert [(p.section, p.page) for p in ps] == [("Phonemic Awareness", 1), ("Phonics", 2)]

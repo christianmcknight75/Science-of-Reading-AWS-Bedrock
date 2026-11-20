@@ -39,6 +39,7 @@ def test_duplicate_candidate_skipped(conn: psycopg.Connection[Any]) -> None:
 def test_db_refuses_approval_without_license_record(conn: psycopg.Connection[Any]) -> None:
     sid = store.add_candidate(conn, {"source_api": "eric", "source_id": "EJ_TEST2", "title": "T"})
     assert sid is not None
+    store.audit_context(conn, "tester", "test approval")
     with pytest.raises(psycopg.errors.CheckViolation):
         conn.execute("UPDATE sources SET status = 'approved' WHERE source_id = %s", (sid,))
 
@@ -48,6 +49,7 @@ def test_approved_source_gets_passages_and_reupsert_bumps_version(
 ) -> None:
     sid = store.add_candidate(conn, {"source_api": "eric", "source_id": "EJ_TEST3", "title": "T"})
     assert sid is not None
+    store.audit_context(conn, "tester", "test approval")
     conn.execute(
         """UPDATE sources SET status='approved', approved_by='tester', approved_at=now(),
            license='cc-by', attribution='A', license_snapshot_url='x', license_checklist='{}'
@@ -62,3 +64,21 @@ def test_approved_source_gets_passages_and_reupsert_bumps_version(
         "SELECT version FROM passages WHERE passage_id=%s", (p.passage_id,)
     ).fetchone()
     assert row and row[0] == 2
+
+
+def test_direct_status_change_is_refused_and_logged_changes_are_audited(
+    conn: psycopg.Connection[Any],
+) -> None:
+    sid = store.add_candidate(conn, {"source_api": "eric", "source_id": "EJ_TEST4", "title": "T"})
+    assert sid is not None
+    with pytest.raises(psycopg.errors.CheckViolation, match="actor and a reason"):
+        conn.execute("UPDATE sources SET status = 'rejected' WHERE source_id = %s", (sid,))
+    conn.rollback()
+    sid = store.add_candidate(conn, {"source_api": "eric", "source_id": "EJ_TEST5", "title": "T"})
+    store.audit_context(conn, "ann", "not relevant")
+    conn.execute("UPDATE sources SET status = 'rejected' WHERE source_id = %s", (sid,))
+    row = conn.execute(
+        "SELECT actor, from_status, to_status, reason FROM source_audit WHERE source_id = %s",
+        (sid,),
+    ).fetchone()
+    assert row == ("ann", "candidate", "rejected", "not relevant")

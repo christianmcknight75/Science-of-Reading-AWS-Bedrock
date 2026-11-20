@@ -50,6 +50,19 @@ class Decision(BaseModel):
     checklist: Checklist | None = None
 
 
+def _audit_context(conn: Conn, actor: str, reason: str) -> None:
+    """Tell the database who is changing a status and why. Transaction-local; the database
+    trigger refuses any status change without it and writes the audit row itself."""
+    conn.execute(
+        "SELECT set_config('app.actor', %s, true), set_config('app.reason', %s, true)",
+        (actor, reason.strip() or "(no note given)"),
+    )
+
+
+class Reopen(BaseModel):
+    reason: str = Field(min_length=5, max_length=2000)
+
+
 @router.get("/sources")
 def list_sources(
     _: Admin, conn: Conn, status: Literal["candidate", "approved", "rejected"] = "candidate"
@@ -107,6 +120,7 @@ def upload_snapshot(
 def decide(source_id: str, body: Decision, reviewer: Admin, conn: Conn) -> dict[str, Any]:
     src = _get(conn, source_id)
     if body.decision == "reject":
+        _audit_context(conn, reviewer, f"Rejected: {body.reviewer_notes}")
         conn.execute(
             """UPDATE sources SET status='rejected', reviewer_notes=%s, approved_by=NULL,
                approved_at=NULL WHERE source_id=%s""",
@@ -136,6 +150,9 @@ def decide(source_id: str, body: Decision, reviewer: Admin, conn: Conn) -> dict[
     if problems:
         raise HTTPException(422, problems)
     assert c is not None  # noqa: S101 (narrowed above)
+    _audit_context(
+        conn, reviewer, f"Approved: {body.reviewer_notes or 'license checklist complete'}"
+    )
     conn.execute(
         """UPDATE sources SET status='approved', license=COALESCE(%s, license), attribution=%s,
              source_type=COALESCE(%s, source_type), topics=%s, grades=%s,
@@ -154,3 +171,29 @@ def decide(source_id: str, body: Decision, reviewer: Admin, conn: Conn) -> dict[
         ),
     )
     return _get(conn, source_id)
+
+
+@router.post("/sources/{source_id}/reopen")
+def reopen(source_id: str, body: Reopen, reviewer: Admin, conn: Conn) -> dict[str, Any]:
+    """rejected -> candidate, or approved -> candidate. A reason is required and is logged with
+    who and when. Re-opened sources leave the research library until approved again."""
+    src = _get(conn, source_id)
+    if src["status"] == "candidate":
+        raise HTTPException(409, "source is already a candidate")
+    _audit_context(conn, reviewer, f"Re-opened: {body.reason}")
+    conn.execute(
+        """UPDATE sources SET status='candidate', approved_by=NULL, approved_at=NULL
+           WHERE source_id=%s""",
+        (source_id,),
+    )
+    return _get(conn, source_id)
+
+
+@router.get("/sources/{source_id}/audit")
+def audit_log(source_id: str, _: Admin, conn: Conn) -> list[dict[str, Any]]:
+    _get(conn, source_id)
+    return conn.execute(
+        """SELECT ts, actor, from_status, to_status, reason FROM source_audit
+           WHERE source_id = %s ORDER BY ts, id""",
+        (source_id,),
+    ).fetchall()

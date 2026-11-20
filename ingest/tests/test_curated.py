@@ -69,6 +69,7 @@ def test_idempotent(conn: psycopg.Connection[Any], tmp_path: Path) -> None:
 
 
 def test_human_decisions_are_never_changed(conn: psycopg.Connection[Any], tmp_path: Path) -> None:
+    store.audit_context(conn, "tester", "seed a human decision")
     conn.execute(
         "INSERT INTO sources (source_id, title, status, reviewer_notes) "
         "VALUES ('src_9500', 'Already reviewed paper', 'rejected', 'my note')"
@@ -80,3 +81,20 @@ def test_human_decisions_are_never_changed(conn: psycopg.Connection[Any], tmp_pa
     r = conn.execute("SELECT status, reviewer_notes FROM sources WHERE source_id='src_9500'")
     assert r.fetchone() == ("rejected", "my note")
     assert any("src_9500" in c for c in rep["conflicts"])  # rejected, but list says ready
+
+
+def test_rerun_updates_details_but_never_status(
+    conn: psycopg.Connection[Any], tmp_path: Path
+) -> None:
+    f = tmp_path / "c.yaml"
+    f.write_text(YAML)
+    load_curated(conn, f)
+    f.write_text(
+        YAML.replace('url: "TODO: find it"', 'url: "https://x.gov/uk"').replace(
+            "status: permission, contact", "status: quote_only, contact"
+        )
+    )
+    load_curated(conn, f)
+    assert rows(conn, "t_gov")[3] == "https://x.gov/uk"  # missing link filled in
+    held = rows(conn, "t_hold")
+    assert held[0] == "rejected" and held[5] == "quote_only"

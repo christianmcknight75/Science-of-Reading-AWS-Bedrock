@@ -45,6 +45,7 @@ def parse_pdf(path: Path) -> list[Block]:
                 )
                 if is_heading:
                     section = text
+                    blocks.append(Block(text="", page=page_no, section=section))  # heading marker
                 else:
                     blocks.append(Block(text=text, page=page_no, section=section))
     return blocks

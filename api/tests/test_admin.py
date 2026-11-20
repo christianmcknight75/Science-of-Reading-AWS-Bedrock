@@ -165,3 +165,64 @@ def test_non_admin_forbidden(monkeypatch: pytest.MonkeyPatch) -> None:
         assert TestClient(app).get("/admin/sources").status_code == 401
     finally:
         app.dependency_overrides.clear()
+
+
+def approve(client: TestClient, sid: str) -> None:
+    client.post(
+        f"/admin/sources/{sid}/license-snapshot", files={"file": ("l.txt", b"x", "text/plain")}
+    )
+    r = client.post(
+        f"/admin/sources/{sid}/decision",
+        json={"decision": "approve", "license": "cc-by", "attribution": "A", "checklist": GOOD},
+    )
+    assert r.status_code == 200
+
+
+def test_reopen_needs_reason_and_logs_who_when_why(client: TestClient) -> None:
+    sid = make_candidate(client)
+    client.post(
+        f"/admin/sources/{sid}/decision", json={"decision": "reject", "reviewer_notes": "oops"}
+    )
+    assert client.post(f"/admin/sources/{sid}/reopen", json={}).status_code == 422
+    assert client.post(f"/admin/sources/{sid}/reopen", json={"reason": "  "}).status_code == 422
+    r = client.post(f"/admin/sources/{sid}/reopen", json={"reason": "Rejected by mistake"})
+    assert r.status_code == 200 and r.json()["status"] == "candidate"
+    assert client.post(f"/admin/sources/{sid}/reopen", json={"reason": "again"}).status_code == 409
+    log = client.get(f"/admin/sources/{sid}/audit").json()
+    assert [(e["from_status"], e["to_status"]) for e in log] == [
+        ("candidate", "rejected"),
+        ("rejected", "candidate"),
+    ]
+    assert log[-1]["actor"] == "dev-admin" and "Rejected by mistake" in log[-1]["reason"]
+    assert log[-1]["ts"]
+
+
+def test_reopen_approved_clears_approval_and_leaves_retrieval(client: TestClient) -> None:
+    sid = make_candidate(client)
+    approve(client, sid)
+    conn = app.dependency_overrides[get_conn]()
+    conn.execute(
+        "INSERT INTO passages (passage_id, source_id, text) VALUES (%s, %s, 'phonics text')",
+        (f"{sid}_p001", sid),
+    )
+    q = "SELECT count(*) AS n FROM retrievable_passages WHERE source_id = %s"
+    assert conn.execute(q, (sid,)).fetchone()["n"] == 1
+    r = client.post(f"/admin/sources/{sid}/reopen", json={"reason": "license questioned"})
+    assert r.json()["status"] == "candidate" and r.json()["approved_by"] is None
+    assert conn.execute(q, (sid,)).fetchone()["n"] == 0  # passages stay, but are not retrievable
+
+
+def test_held_sources_are_excluded_from_retrieval_even_if_approved(client: TestClient) -> None:
+    sid = make_candidate(client)
+    approve(client, sid)
+    conn = app.dependency_overrides[get_conn]()
+    conn.execute(
+        "INSERT INTO passages (passage_id, source_id, text) VALUES (%s, %s, 'text')",
+        (f"{sid}_p001", sid),
+    )
+    q = "SELECT count(*) AS n FROM retrievable_passages WHERE source_id = %s"
+    assert conn.execute(q, (sid,)).fetchone()["n"] == 1
+    conn.execute("UPDATE sources SET curation_status = 'quote_only' WHERE source_id = %s", (sid,))
+    assert conn.execute(q, (sid,)).fetchone()["n"] == 0
+    conn.execute("UPDATE sources SET curation_status = 'ready' WHERE source_id = %s", (sid,))
+    assert conn.execute(q, (sid,)).fetchone()["n"] == 1

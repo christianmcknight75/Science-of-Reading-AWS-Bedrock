@@ -21,6 +21,8 @@ from typing import Any
 import psycopg
 import yaml
 
+from .store import audit_context
+
 CURATED_FILE = Path(__file__).resolve().parent.parent / "curated_sources.yaml"
 HOLD = {"permission", "quote_only"}
 HOLD_TEXT = {
@@ -81,26 +83,40 @@ def load_curated(conn: psycopg.Connection[Any], path: Path = CURATED_FILE) -> di
         cur = e["status"]
         if cur not in {"ready", "verify"} | HOLD:
             raise ValueError(f"{e['id']}: unknown status {cur!r}")
-        if conn.execute("SELECT 1 FROM sources WHERE curated_id = %s", (e["id"],)).fetchone():
-            report["already_loaded"].append(e["id"])
-            continue
         title = html.unescape(e["title"])
         url, pdf_url, doi = _url_fields(e.get("url"))
         held = cur in HOLD
+        role = e.get("evidence_role") or (
+            "summary" if e.get("source_type") == "government_guide" else "primary"
+        )
         meta = (
             e["id"], e.get("publisher"), e.get("jurisdiction"), e.get("priority"),
             e.get("used_for", []), bool(e.get("foundational_allow_list", False)), cur, _note(e),
+            role,
         )  # fmt: skip
+        if conn.execute("SELECT 1 FROM sources WHERE curated_id = %s", (e["id"],)).fetchone():
+            # Re-run: refresh curation details and fill in a missing link. Never touch status.
+            conn.execute(
+                """UPDATE sources SET publisher=%s, jurisdiction=%s, priority=%s, used_for=%s,
+                     foundational_allow_list=%s, curation_status=%s, curation_note=%s,
+                     evidence_role=%s, url=COALESCE(url, %s), pdf_url=COALESCE(pdf_url, %s),
+                     doi=COALESCE(doi, %s) WHERE curated_id=%s""",
+                (*meta[1:], url, pdf_url, doi, e["id"]),
+            )
+            report["already_loaded"].append(e["id"])
+            continue
         found = _find_existing(conn, title, url, doi)
         if found:
             sid, status = found
             conn.execute(
                 """UPDATE sources SET curated_id=%s, publisher=%s, jurisdiction=%s, priority=%s,
-                     used_for=%s, foundational_allow_list=%s, curation_status=%s, curation_note=%s
+                     used_for=%s, foundational_allow_list=%s, curation_status=%s, curation_note=%s,
+                     evidence_role=%s, url=COALESCE(url, %s), pdf_url=COALESCE(pdf_url, %s)
                    WHERE source_id=%s""",
-                (*meta, sid),
+                (*meta, url, pdf_url, sid),
             )
-            if status == "candidate":  # still undecided: safe to apply the curation outcome
+            if status == "candidate" and held:  # undecided and on hold: park it
+                audit_context(conn, "curated-loader", HOLD_TEXT[cur])
                 conn.execute(
                     """UPDATE sources SET status=%s, reviewer_notes=%s,
                          license=COALESCE(license, %s) WHERE source_id=%s""",
@@ -123,12 +139,14 @@ def load_curated(conn: psycopg.Connection[Any], path: Path = CURATED_FILE) -> di
         if row is None:
             raise RuntimeError("could not compute next source id")
         sid = f"src_{row[0]:04d}"
+        if held:
+            audit_context(conn, "curated-loader", HOLD_TEXT[cur])
         conn.execute(
             """INSERT INTO sources (source_id, title, authors, year, doi, url, pdf_url,
                  discovered_from, curated_id, publisher, jurisdiction, priority, used_for,
-                 foundational_allow_list, curation_status, curation_note, status,
+                 foundational_allow_list, curation_status, curation_note, evidence_role, status,
                  reviewer_notes, license, source_type)
-               VALUES (%s,%s,%s,%s,%s,%s,%s,'curated',%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+               VALUES (%s,%s,%s,%s,%s,%s,%s,'curated',%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
             (
                 sid, title, [e["publisher"]] if e.get("publisher") else [], e.get("year"),
                 doi, url, pdf_url, *meta, "rejected" if held else "candidate",

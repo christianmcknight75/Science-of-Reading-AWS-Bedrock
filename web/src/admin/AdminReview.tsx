@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { decide, listSources, uploadSnapshot, type Source } from "./api";
+import {
+  decide,
+  getAudit,
+  listSources,
+  reopen,
+  uploadSnapshot,
+  type AuditEntry,
+  type Source,
+} from "./api";
 
 const USES = [
   ["copy_store", "We may copy and store the full text"],
@@ -168,16 +176,105 @@ function ReviewForm({ source, onDone }: { source: Source; onDone: () => void }) 
   );
 }
 
+function ReopenPanel({ source, onDone }: { source: Source; onDone: () => void }) {
+  const [reason, setReason] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [log, setLog] = useState<AuditEntry[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    getAudit(source.source_id)
+      .then(setLog)
+      .catch(() => setLog([]));
+  }, [source.source_id]);
+
+  async function submit() {
+    setBusy(true);
+    setError(null);
+    try {
+      await reopen(source.source_id, reason);
+      onDone();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-semibold">{source.title}</h2>
+      <p>
+        Status: <strong>{source.status}</strong>
+        {source.curation_status && source.curation_status !== "ready" && (
+          <>
+            {" "}
+            · Curation: <strong>{source.curation_status}</strong>
+          </>
+        )}
+      </p>
+      {source.curation_note && (
+        <p className="rounded-lg bg-notice-bg p-3 text-notice-text">
+          <strong>Curator note:</strong> {source.curation_note}
+        </p>
+      )}
+      <form onSubmit={(e) => e.preventDefault()} className="space-y-3">
+        <label htmlFor="reason" className="block font-semibold">
+          Reason for re-opening (required, saved with your name and the time)
+        </label>
+        <textarea
+          id="reason"
+          rows={3}
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          className="w-full rounded-lg border border-border p-3"
+        />
+        {error && (
+          <div role="alert" className="rounded-lg bg-notice-bg p-4 text-notice-text">
+            <strong>Cannot re-open yet:</strong> {error}
+          </div>
+        )}
+        <button
+          type="button"
+          disabled={busy || reason.trim().length < 5}
+          onClick={submit}
+          className={`${btn} bg-primary text-white hover:bg-primary-hover disabled:opacity-60`}
+        >
+          Re-open as candidate
+        </button>
+      </form>
+      <section aria-labelledby="hist">
+        <h3 id="hist" className="font-heading font-semibold">
+          History
+        </h3>
+        {log.length === 0 ? (
+          <p>No logged changes yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {log.map((e, i) => (
+              <li key={i} className="rounded-lg border border-border bg-surface p-3">
+                {new Date(e.ts).toLocaleString()} · {e.actor}: {e.from_status ?? "new"} to{" "}
+                {e.to_status}. {e.reason}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+}
+
 export default function AdminReview() {
   const [sources, setSources] = useState<Source[] | null>(null);
   const [selected, setSelected] = useState<Source | null>(null);
+  const [tab, setTab] = useState<Source["status"]>("candidate");
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
-    listSources("candidate")
+    listSources(tab)
       .then(setSources)
       .catch((e: Error) => setError(e.message));
-  }, []);
+  }, [tab]);
   useEffect(() => {
     load();
   }, [load]);
@@ -200,9 +297,26 @@ export default function AdminReview() {
       {sources === null && !error && <p role="status">Loading sources…</p>}
       {sources?.length === 0 && (
         <p role="status" className="mt-4">
-          No sources waiting for review.
+          No sources in this list.
         </p>
       )}
+      <div role="group" aria-label="Show sources that are" className="mt-4 flex flex-wrap gap-2">
+        {(["candidate", "approved", "rejected"] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            aria-pressed={tab === t}
+            onClick={() => {
+              setSources(null);
+              setSelected(null);
+              setTab(t);
+            }}
+            className={`${btn} border border-primary aria-pressed:bg-primary aria-pressed:text-white`}
+          >
+            {t === "candidate" ? "Waiting for review" : t === "approved" ? "Approved" : "Rejected"}
+          </button>
+        ))}
+      </div>
       <div className="mt-6 grid gap-8 md:grid-cols-[1fr_2fr]">
         <nav aria-label="Candidate sources">
           <ul className="space-y-2">
@@ -224,8 +338,10 @@ export default function AdminReview() {
           </ul>
         </nav>
         <div>
-          {selected ? (
+          {selected && selected.status === "candidate" ? (
             <ReviewForm key={selected.source_id} source={selected} onDone={done} />
+          ) : selected ? (
+            <ReopenPanel key={selected.source_id} source={selected} onDone={done} />
           ) : sources?.length ? (
             <p>Pick a source to review.</p>
           ) : null}
