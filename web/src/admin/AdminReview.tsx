@@ -53,6 +53,10 @@ function ReviewForm({ source, onDone }: { source: Source; onDone: () => void }) 
           1. Identify the source
         </h3>
         <dl className="mt-2">
+          <dt className="font-semibold">Publisher</dt>
+          <dd>{source.publisher ?? "unknown"}</dd>
+          <dt className="font-semibold">Jurisdiction</dt>
+          <dd>{source.jurisdiction ?? "unknown"}</dd>
           <dt className="font-semibold">Year</dt>
           <dd>{source.year ?? "unknown"}</dd>
           <dt className="font-semibold">DOI</dt>
@@ -69,6 +73,11 @@ function ReviewForm({ source, onDone }: { source: Source; onDone: () => void }) 
           </dd>
         </dl>
       </section>
+      {source.curation_note && (
+        <p className="rounded-lg bg-notice-bg p-3 text-notice-text">
+          <strong>Curator note:</strong> {source.curation_note}
+        </p>
+      )}
       <div>
         <label htmlFor="license" className="block font-semibold">
           2. License (for example cc-by)

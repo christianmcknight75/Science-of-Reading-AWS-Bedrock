@@ -1,0 +1,228 @@
+# Curated sources for the SoR Assistant (Reading Helper)
+# Checked 2026-11-19. Every entry still goes through the admin review queue
+# (a human attaches the license snapshot and clicks Approve).
+#
+# status:
+#   ready           – license confirmed open (public domain / OGL / CC BY). Human approval only.
+#   verify          – almost certainly fine, but no license statement found in the document itself.
+#   permission      – excellent content, but rights reserved. Ask the publisher/authors first.
+#   quote_only      – CC BY-NC-ND. Needs the team's no-derivatives decision.
+# jurisdiction lets answers say "U.S. federal guidance" vs "UK government guidance".
+
+sources:
+
+  # ---------- U.S. federal (public domain) — the backbone ----------
+  - id: ies_foundational_k3_2016
+    title: "Foundational Skills to Support Reading for Understanding in Kindergarten Through 3rd Grade (NCEE 2016-4008)"
+    publisher: "What Works Clearinghouse, IES, U.S. Department of Education"
+    year: 2016
+    url: "https://ies.ed.gov/ncee/wwc/PracticeGuide/21"
+    license: "public-domain (U.S. government work)"
+    status: ready            # already pre-filled in the admin queue
+    jurisdiction: US
+    source_type: practice_guide
+    foundational_allow_list: false
+    priority: 1
+    used_for: [qa, lesson_check, activities, sequencing, training]
+
+  - id: nrp_2000
+    title: "Report of the National Reading Panel: Teaching Children to Read (+ Reports of the Subgroups)"
+    publisher: "NICHD, National Institutes of Health"
+    year: 2000
+    url: "https://www.nichd.nih.gov/publications/pubs/nrp/smallbook"
+    license: "public-domain (U.S. government work)"
+    status: ready
+    jurisdiction: US
+    source_type: foundational
+    foundational_allow_list: true   # older than 10 years, kept on purpose
+    priority: 1
+    used_for: [qa, myths, training]
+
+  - id: ies_rti_primary_2009
+    title: "Assisting Students Struggling with Reading: Response to Intervention and Multi-Tier Intervention in the Primary Grades (NCEE 2009-4045)"
+    publisher: "What Works Clearinghouse, IES, U.S. Department of Education"
+    year: 2009
+    url: "https://ies.ed.gov/ncee/wwc/practiceguide/3"
+    license: "public-domain (U.S. government work)"
+    status: ready
+    jurisdiction: US
+    source_type: practice_guide
+    foundational_allow_list: true   # federal practice guide, older than 10 years
+    priority: 1
+    used_for: [qa, why_stuck, small_groups]
+    note: "Screening, small-group intervention (3–5x/week, 20–40 min), progress monitoring. Core for 'Why is a kid stuck?' and group planning."
+
+  - id: rel_se_plc_foundational_k3
+    title: "Professional Learning Communities Facilitator's Guide for the WWC Practice Guide: Foundational Skills to Support Reading for Understanding in K–3 (+ Participant's Activities, videos)"
+    publisher: "Regional Educational Laboratory Southeast, IES"
+    year: 2016
+    url: "https://ies.ed.gov/ncee/edLabs/regions/southeast/plc.asp"
+    license: "public-domain (IES/REL product) — confirm statement on the PDF's inside cover"
+    status: ready
+    jurisdiction: US
+    source_type: practice_guide
+    priority: 1
+    used_for: [training, activities, refreshers]
+    note: "Built exactly for 'PD into practice'. Includes activity videos on syllables, rhyme, compound words, sentence segmentation, morphology. Ingest the PDFs; link the videos, don't ingest them."
+
+  - id: rel_midwest_pa_phonics_rubric_2021
+    title: "Phonological Awareness and Phonics Instructional Rubric"
+    publisher: "Regional Educational Laboratory Midwest, IES"
+    year: 2021
+    url: "https://ies.ed.gov/ncee/edlabs/regions/midwest/training-and-coaching/phonological-awareness-phonics-instructional-rubric.aspx"
+    license: "public-domain (IES/REL product)"
+    status: ready            # approved/being approved in the queue
+    jurisdiction: US
+    source_type: practice_guide
+    priority: 1
+    used_for: [lesson_check]
+    note: "Use for lesson-plan feedback only. The rubric itself says it is not for teacher evaluation."
+
+  - id: rel_se_materials_rubric_2017
+    title: "Rubric for Evaluating Reading/Language Arts Instructional Materials for Kindergarten to Grade 5 (REL 2017-219)"
+    publisher: "Regional Educational Laboratory Southeast, IES"
+    year: 2017
+    url: "https://ies.ed.gov/ncee/edlabs/regions/southeast/pdf/REL_2017219.pdf"
+    license: "public-domain (stated in the PDF)"
+    status: ready
+    jurisdiction: US
+    source_type: practice_guide
+    priority: 2
+    used_for: [lesson_check, story_quality]
+
+  - id: wwc_family_teacher_guides_2021
+    title: "Kindergarten / First / Second / Third Grade Teacher's Guide to Supporting Family Involvement in Foundational Reading Skills"
+    publisher: "What Works Clearinghouse / REL, IES"
+    year: 2021
+    url: "https://ies.ed.gov/ncee/wwc/PracticeGuide/21"   # listed under the guide's Related Resources
+    license: "public-domain (IES product)"
+    status: ready
+    jurisdiction: US
+    source_type: practice_guide
+    priority: 2
+    used_for: [activities, family_notes]
+
+  - id: put_reading_first_k3
+    title: "Put Reading First: The Research Building Blocks for Teaching Children to Read, Kindergarten Through Grade 3 (3rd ed.)"
+    publisher: "National Institute for Literacy / NICHD / U.S. Department of Education (Partnership for Reading)"
+    year: 2003   # 3rd edition reprinted ~2009; 1st ed. 2001
+    url: "https://www.nichd.nih.gov/publications/pubs/Documents/PRFbooklet.pdf"
+    license: "public-domain (U.S. federal agency publication; no explicit statement in the PDF; team decision to include)"
+    status: ready
+    jurisdiction: US
+    source_type: foundational
+    foundational_allow_list: true
+    priority: 1
+    used_for: [qa, training, refreshers]
+    note: "Teacher-friendly K–3 summary of the NRP: phonemic awareness, phonics, fluency, vocabulary, comprehension. Written by CIERA under a federal award, so Aidan should confirm it's public domain."
+
+  - id: ies_reading_comprehension_k3_2010
+    title: "Improving Reading Comprehension in Kindergarten Through 3rd Grade (NCEE 2010-4038)"
+    publisher: "What Works Clearinghouse, IES"
+    year: 2010
+    url: "TODO: find on the WWC Practice Guides page"
+    license: "public-domain (U.S. government work)"
+    status: ready
+    jurisdiction: US
+    source_type: practice_guide
+    foundational_allow_list: true
+    priority: 3    # meeting said foundational skills first; add later
+    used_for: [qa]
+
+  - id: ies_english_learners_2014
+    title: "Teaching Academic Content and Literacy to English Learners in Elementary and Middle School (NCEE 2014-4012)"
+    publisher: "What Works Clearinghouse, IES"
+    year: 2014
+    url: "TODO: find on the WWC Practice Guides page"
+    license: "public-domain (U.S. government work)"
+    status: ready
+    jurisdiction: US
+    source_type: practice_guide
+    foundational_allow_list: true
+    priority: 3
+    used_for: [qa]
+
+  # ---------- Other governments with open licenses ----------
+  - id: uk_dfe_reading_framework_2023
+    title: "The reading framework (July 2023)"
+    publisher: "Department for Education (England)"
+    year: 2023
+    url: "https://dera.ioe.ac.uk/id/eprint/39973/"
+    license: "Open Government Licence v3.0 (allows copying, adapting and commercial use with attribution; excludes logos and any third-party material)"
+    status: ready
+    jurisdiction: UK
+    source_type: government_guide
+    priority: 1
+    used_for: [qa, sequencing, decodable_texts, myths, story_quality]
+    note: "Very detailed on systematic phonics, decodable books, a phonics progression and avoiding guessing strategies. Uses English school terms: Reception ≈ U.S. kindergarten, Year 1 ≈ K–1st grade. Answers should say 'UK government guidance'."
+
+  - id: aero_intro_science_of_reading
+    title: "Introduction to the science of reading"
+    publisher: "Australian Education Research Organisation (AERO)"
+    year: 2023
+    url: "https://www.edresearch.edu.au/resources/introduction-science-reading"
+    license: "CC BY 4.0 unless otherwise indicated (photographs excluded)"
+    status: ready
+    jurisdiction: AU
+    source_type: government_guide
+    priority: 2
+    used_for: [qa, training, refreshers]
+
+  - id: aero_explicit_instruction
+    title: "Explicit instruction: Practice guide"
+    publisher: "Australian Education Research Organisation (AERO)"
+    year: 2021
+    url: "https://www.edresearch.edu.au/topics/explicit-instruction"
+    license: "CC BY 4.0 unless otherwise indicated"
+    status: ready
+    jurisdiction: AU
+    source_type: government_guide
+    priority: 2
+    used_for: [lesson_check, training]
+    note: "Browse AERO's literacy topic page for more CC BY reading resources."
+
+  - id: nsw_cese_effective_reading_2017
+    title: "Effective reading instruction in the early years of school (literature review)"
+    publisher: "Centre for Education Statistics and Evaluation, NSW Department of Education"
+    year: 2017
+    url: "https://education.nsw.gov.au/about-us/education-data-and-research/cese/publications/literature-reviews/effective-reading-instruction-in-the-early-years-of-school"
+    license: "not stated in the PDF (NSW Government publication; team decision to include)"
+    status: ready
+    jurisdiction: AU
+    source_type: government_guide
+    priority: 2
+
+  # ---------- Studies already approved through the queue ----------
+  - id: brooks_2025_vocab_pa
+    title: "Evaluating the impact of vocabulary instruction on oral vocabulary, phonemic awareness and nonword reading"
+    url: "https://doi.org/10.1007/s11145-024-10564-1"
+    license: "cc-by-4.0"
+    status: ready
+    jurisdiction: UK
+    source_type: study
+
+  - id: gioia_2027_strict_phonics
+    title: "Strict phonics instruction outperforms mixed phonics: Evidence from a large-scale study"
+    url: "https://www.sciencedirect.com/science/article/pii/S0959475226001489"
+    license: "cc-by-4.0"
+    status: ready
+    jurisdiction: FR
+    source_type: study
+
+  # ---------- Ask permission (one email per publisher/author) ----------
+  - id: eef_ks1_literacy
+    title: "Improving Literacy in Key Stage 1 (2nd ed.)"
+    publisher: "Education Endowment Foundation (England)"
+    url: "https://educationendowmentfoundation.org.uk/education-evidence/guidance-reports/literacy-ks-1"
+    license: "not openly licensed"
+    status: permission
+
+  - { id: alotaiba_2019_ida, title: "Teaching Phonemic Awareness and Word Reading Skills (Perspectives on Language and Literacy)", status: permission, contact: "International Dyslexia Association / authors" }
+  - { id: vadasy_2021, title: "Introducing Phonics to Learners Who Struggle", status: permission, contact: "Patricia Vadasy (one request covers both)" }
+  - { id: vadasy_2023, title: "Cognitive flexibility + phonics intervention effects on reading gains", status: permission, contact: "Patricia Vadasy" }
+  - { id: fletcher_2021_bowers, title: "A commentary on Bowers (2020) and the role of phonics instruction in reading", status: permission, contact: "Springer / authors" }
+
+  # ---------- Waiting on the no-derivatives decision ----------
+  - { id: decodable_meta_2024, title: "The use of decodable texts in the teaching of reading in children without reading disabilities: a meta-analysis (Literacy)", license: "cc-by-nc-nd", status: quote_only }
+  - { id: pennell_2024, title: "A Healthy Diet for Beginning Readers: Decodable Texts as Part of a Comprehensive Literacy Program", license: "cc-by-nc-nd-4.0", status: quote_only }
+  - { id: beginning_texts_2024, title: "Enhancing Opportunities for Decoding and Knowledge Building through Beginning Texts", license: "cc-by-nc-nd", status: quote_only }

@@ -11,6 +11,11 @@ export interface Source {
   license: string | null;
   license_snapshot_url: string | null;
   status: "candidate" | "approved" | "rejected";
+  publisher: string | null;
+  jurisdiction: string | null;
+  curation_status: string | null;
+  curation_note: string | null;
+  reviewer_notes: string | null;
 }
 
 export interface Checklist {

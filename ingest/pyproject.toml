@@ -7,13 +7,24 @@ name = "sor-ingest"
 version = "0.1.0"
 description = "Reading Helper ingestion pipeline"
 requires-python = ">=3.12"
-dependencies = ["psycopg[binary]>=3.2", "pymupdf>=1.24", "boto3>=1.35"]
+dependencies = [
+    "psycopg[binary]>=3.2",
+    "pymupdf>=1.24",
+    "boto3>=1.35",
+    "pyyaml>=6.0.3",
+]
 
 [project.scripts]
 sor-ingest = "sor_ingest.cli:main"
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.11", "boto3-stubs>=1.35"]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "boto3-stubs>=1.35",
+    "types-pyyaml>=6.0.12.20261113",
+]
 
 [tool.ruff]
 line-length = 100

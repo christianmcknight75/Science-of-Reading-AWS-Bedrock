@@ -8,20 +8,18 @@ sor-ingest process --embedder stub|titan                   # approved sources on
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import sys
 import urllib.request
 from pathlib import Path
-from typing import Any
 
 from . import store
 from .chunking import chunk_blocks
+from .curated import load_curated
 from .embedder import get_embedder
 from .parse import parse_pdf
 
 PDF_DIR = Path(os.environ.get("SOR_PDF_DIR", "data/local/pdfs"))
-ALLOWLIST = Path(__file__).resolve().parent.parent / "allowlist.json"
 
 
 def cmd_search(args: argparse.Namespace) -> int:
@@ -46,33 +44,16 @@ def cmd_search(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_allowlist(_: argparse.Namespace) -> int:
-    entries: list[dict[str, Any]] = json.loads(ALLOWLIST.read_text())
-    added = 0
+def cmd_curated(args: argparse.Namespace) -> int:
     with store.connect() as conn:
-        for e in entries:
-            sid = store.next_source_id(conn)
-            exists = conn.execute(
-                "SELECT 1 FROM sources WHERE title = %s", (e["title"],)
-            ).fetchone()
-            if exists:
-                continue
-            conn.execute(
-                """INSERT INTO sources (source_id, title, authors, year, url, pdf_url, source_type,
-                                        discovered_from)
-                   VALUES (%s,%s,%s,%s,%s,%s,%s,'allowlist')""",
-                (
-                    sid,
-                    e["title"],
-                    e.get("authors", []),
-                    e.get("year"),
-                    e.get("url"),
-                    e.get("pdf_url"),
-                    e["source_type"],
-                ),
-            )
-            added += 1
-    print(f"added {added} foundational candidates")
+        report = load_curated(conn)
+        if args.dry_run:
+            conn.rollback()
+    prefix = "[dry run, nothing saved] " if args.dry_run else ""
+    for key, items in report.items():
+        print(f"{prefix}{key}: {len(items)}")
+        for item in items:
+            print(f"    {item}")
     return 0
 
 
@@ -113,7 +94,9 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--topic", action="append")
     s.add_argument("--rows", type=int, default=20)
     s.set_defaults(fn=cmd_search)
-    sub.add_parser("allowlist").set_defaults(fn=cmd_allowlist)
+    cu = sub.add_parser("curated")
+    cu.add_argument("--dry-run", action="store_true")
+    cu.set_defaults(fn=cmd_curated)
     pr = sub.add_parser("process")
     pr.add_argument("--embedder", choices=["stub", "titan"], default="stub")
     pr.set_defaults(fn=cmd_process)

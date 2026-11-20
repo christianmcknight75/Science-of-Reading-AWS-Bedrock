@@ -16,7 +16,7 @@ make lint
 ```
 docker compose up -d db && make migrate && make seed      # create tables, load myths
 cd ingest && uv run sor-ingest search --topic "phonics instruction"   # candidates only
-uv run sor-ingest allowlist                                           # foundational docs
+uv run sor-ingest curated --dry-run; uv run sor-ingest curated        # curated source list -> review queue
 # review at http://localhost:5173/#/admin  (after make dev), then:
 uv run sor-ingest process --embedder stub                             # approved sources only
 ```

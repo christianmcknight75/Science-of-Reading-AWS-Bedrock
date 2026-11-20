@@ -20,7 +20,8 @@ Admin = Annotated[str, Depends(require_admin)]
 COLUMNS = (
     "source_id, title, authors, year, doi, eric_id, url, pdf_url, license, license_snapshot_url, "
     "attribution, source_type, topics, grades, status, license_checklist, reviewer_notes, "
-    "approved_by, approved_at, version, discovered_from"
+    "approved_by, approved_at, version, discovered_from, publisher, jurisdiction, priority, "
+    "used_for, curation_status, curation_note"
 )
 
 
@@ -40,7 +41,10 @@ class Decision(BaseModel):
     reviewer_notes: str = ""
     license: str | None = Field(default=None, max_length=100)
     attribution: str | None = Field(default=None, max_length=1000)
-    source_type: Literal["practice_guide", "meta_analysis", "study", "foundational"] | None = None
+    source_type: (
+        Literal["practice_guide", "meta_analysis", "study", "foundational", "government_guide"]
+        | None
+    ) = None
     topics: list[str] = []
     grades: list[str] = []
     checklist: Checklist | None = None
