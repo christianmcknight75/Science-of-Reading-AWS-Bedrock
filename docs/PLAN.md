@@ -14,6 +14,8 @@ Branch `viktoriia/foundation`. 2026-11-20 update: embeddings are now local BGE-s
 
 **Built 2026-11-20 against fake model clients (ADR 0005), never run live:** redaction, router, hybrid retrieval, prompt, Converse client, verifier, label wiring, myths, rate limit, kill switch (off), query_log, eval harness. Remaining: live run (blocked by SCP, OPEN_QUESTIONS 15), Guardrails creation (Phase 5), SME-reviewed eval set. The list below is what was not started before this.
 
+**Added overnight 2026-11-20 (all against fake model clients, nothing live):** Phase 4 endpoints (group plan, story, stuck, training, refresher, feedback; `docs/API_CONTRACT.md`), the decodability checker (`api/app/decodable/`), closed-access accounts with a Cognito-shaped local issuer, draft myth-link proposals for SME review, the team's 6 sample questions in the eval set. 197 API tests pass. Still blocked: any live model call (OPEN_QUESTIONS 15). Needs a decision: see the morning summary in the chat and OPEN_QUESTIONS 17-26.
+
 **Not started before 2026-11-20**
 Presidio redaction, router, hybrid retrieval over `retrievable_passages` only, relevance threshold, prompt builder, Converse call with claims-to-passage_ids output, verifier (cited ids, exact quotes, claim support), rule-based evidence label wiring, myth check, Guardrails, rate limits and kill switch, `query_log`, `evals/questions.yaml`, eval harness and `make eval`.
 

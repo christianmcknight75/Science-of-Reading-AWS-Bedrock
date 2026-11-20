@@ -47,6 +47,11 @@ BASELINE_TOOL = ToolSpec(
 BASELINE_SYSTEM = "You are a helpful assistant for K-3 teachers. Answer the question briefly."
 
 
+class _NoRow:
+    def fetchone(self) -> None:
+        return None
+
+
 class EvalConn:
     """Real connection for reads; query_log writes are captured, never stored."""
 
@@ -57,7 +62,7 @@ class EvalConn:
     def execute(self, sql: str, params: Any = None) -> Any:
         if "INSERT INTO query_log" in sql:
             self.captured.append(params)
-            return None
+            return _NoRow()
         return self._conn.execute(sql, params)
 
     def commit(self) -> None:
@@ -177,7 +182,7 @@ def run_pipeline(
         counting.reset()
         ec.captured.clear()
         resp = engine.ask(AskRequest(question=q["question"], grade=q.get("grade")))
-        redacted, ids, _answer, _label, ms, meta_json = ec.captured[0]
+        _feature, redacted, ids, _answer, _label, ms, meta_json = ec.captured[0]
         meta = json.loads(meta_json)
         verifier = meta.get("verifier", {})
         leaked = any(
