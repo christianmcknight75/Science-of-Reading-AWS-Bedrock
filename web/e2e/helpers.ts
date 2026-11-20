@@ -54,3 +54,11 @@ export async function fast(page: Page) {
     window.localStorage.clear();
   });
 }
+
+/** Keep the mock slow enough to look at the loading state. */
+export async function slow(page: Page) {
+  await page.addInitScript(() => {
+    (window as unknown as { __MOCK_DELAY__: number }).__MOCK_DELAY__ = 60000;
+    window.localStorage.clear();
+  });
+}

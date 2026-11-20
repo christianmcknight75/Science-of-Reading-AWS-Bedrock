@@ -4,6 +4,7 @@ import { flags } from "./app/flags";
 import { Shell } from "./app/Shell";
 import { Link, match, PageTitle, useLocation } from "./app/router";
 import { SettingsProvider } from "./app/settings";
+import Answer from "./screens/Answer";
 import Home from "./screens/Home";
 
 function NotFound() {
@@ -31,6 +32,7 @@ function FlaggedOff({ name }: { name: string }) {
 function route(path: string, query: URLSearchParams): { node: ReactNode; board?: boolean } {
   void query;
   if (path === "/") return { node: <Home /> };
+  if (path === "/ask") return { node: <Answer /> };
   if (flags.behavior && path === "/behavior") return { node: <FlaggedOff name="Behavior" /> };
   if (flags.progress && path === "/teaching/progress")
     return { node: <FlaggedOff name="Progress" /> };

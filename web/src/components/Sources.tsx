@@ -37,8 +37,18 @@ export function SourcesScope({
   children: ReactNode;
 }) {
   const [active, setActive] = useState<number | null>(null);
-  const ctx = useMemo<Ctx>(() => ({ sources, example, open: setActive }), [sources, example]);
   const returnTo = useRef<HTMLElement | null>(null);
+  const ctx = useMemo<Ctx>(
+    () => ({
+      sources,
+      example,
+      open: (n) => {
+        returnTo.current = document.activeElement as HTMLElement | null;
+        setActive(n);
+      },
+    }),
+    [sources, example],
+  );
   return (
     <SourcesContext.Provider value={ctx}>
       {children}
@@ -51,8 +61,9 @@ export function SourcesScope({
         <Dialog.Portal>
           <Dialog.Overlay className="no-print fixed inset-0 z-40 bg-black/50" />
           <Dialog.Content
-            onOpenAutoFocus={() => {
-              returnTo.current = document.activeElement as HTMLElement | null;
+            onCloseAutoFocus={(e) => {
+              e.preventDefault(); // we opened from buttons, not a Dialog.Trigger
+              returnTo.current?.focus();
             }}
             className="no-print fixed inset-y-0 right-0 z-50 flex w-full max-w-xl flex-col overflow-y-auto border-l border-border bg-surface p-5 shadow-xl"
           >
@@ -192,7 +203,7 @@ export function SourceList() {
               icon="search"
               className="mt-2"
               aria-haspopup="dialog"
-              aria-label={`Show the exact passage from source ${s.n}`}
+              aria-label={`Show exact passage from source ${s.n}`}
             >
               Show exact passage
             </Button>

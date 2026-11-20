@@ -1,8 +1,9 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Icon } from "../components/Icon";
-import { Button, Card, LinkButton } from "../components/ui";
+import { AskForm } from "../components/AskForm";
+import { Card, LinkButton } from "../components/ui";
 import { flags } from "../app/flags";
-import { Link, navigate, PageTitle } from "../app/router";
+import { Link, PageTitle } from "../app/router";
 import { useGroups } from "../lib/groups";
 
 function Area({
@@ -56,12 +57,6 @@ function Area({
 
 export default function Home() {
   const [groups] = useGroups();
-  const [q, setQ] = useState("");
-
-  function submit(e: FormEvent) {
-    e.preventDefault();
-    if (q.trim()) navigate("/ask", { q: q.trim() });
-  }
 
   return (
     <>
@@ -104,33 +99,9 @@ export default function Home() {
         />
       </div>
 
-      <form
-        onSubmit={submit}
-        role="search"
-        aria-label="Ask a question"
-        className="rh-card mt-6 flex flex-col gap-3 rounded-2xl border border-border bg-surface p-3 sm:flex-row sm:items-center"
-      >
-        <label htmlFor="just-ask" className="px-2 font-bold">
-          Or just ask:
-        </label>
-        <input
-          id="just-ask"
-          type="text"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          maxLength={1000}
-          autoComplete="off"
-          aria-describedby="ask-help"
-          placeholder="How do I teach kids the difference between b and d?"
-          className="min-h-target flex-1 rounded-lg border border-control bg-surface px-3 text-ink placeholder:text-muted"
-        />
-        <Button type="submit" variant="primary">
-          Ask
-        </Button>
-      </form>
-      <p id="ask-help" className="mt-2 text-sm text-muted">
-        Please don&apos;t type student names. Describe what you see instead.
-      </p>
+      <div className="mt-6">
+        <AskForm />
+      </div>
     </>
   );
 }
