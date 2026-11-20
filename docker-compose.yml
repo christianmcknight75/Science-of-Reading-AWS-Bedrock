@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: sor
       POSTGRES_PASSWORD: local-dev-only
       POSTGRES_DB: sor
-    ports: ["5432:5432"]
+    ports: ["127.0.0.1:5433:5432"]  # 5433 on your Mac, so it never clashes with a local Postgres
     volumes: ["pgdata:/var/lib/postgresql/data"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sor"]
@@ -16,7 +16,7 @@ services:
     build: ./api
     environment:
       DATABASE_URL: postgresql://sor:local-dev-only@db:5432/sor
-    ports: ["8000:8000"]
+    ports: ["127.0.0.1:8000:8000"]
     depends_on:
       db: {condition: service_healthy}
   web:
@@ -24,6 +24,6 @@ services:
     working_dir: /app
     volumes: ["./web:/app"]
     command: sh -c "npm install && npm run dev -- --host"
-    ports: ["5173:5173"]
+    ports: ["127.0.0.1:5173:5173"]
 volumes:
   pgdata:
