@@ -1,7 +1,7 @@
 # Model IDs for the Reading Helper. Code reads these; nothing else may hard-code a model ID.
 # Source of truth for what is allowed: the Hub's IAM permissions boundary `StorefrontModelBoundary`
 # (allows only anthropic.claude-haiku-5-5 and anthropic.claude-sonnet-4-5-20250929-v1:0; no embedding
-# model). The org SCP p-bzauo53j currently blocks both (see docs/OPEN_QUESTIONS.md #15).
+# model). The org SCP (id withheld) currently blocks both (see docs/OPEN_QUESTIONS.md #15).
 # Any value can be overridden with its env var.
 region: us-east-2
 
