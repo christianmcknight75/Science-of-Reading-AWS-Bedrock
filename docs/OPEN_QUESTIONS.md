@@ -3,13 +3,13 @@
 | # | Question | Owner | Status |
 |---|---|---|---|
 | 1 | Which open-source license and copyright holder? (Existing `LICENSE` is MIT; check whether the Hub/MDE requires one for the GitHub org. Apache-2.0 adds a patent grant.) | Viktoriia / Hub | Open — deferred 2026-11-19 |
-| 2 | Wireframes for `design/wireframes/` (HTML export from artifacts) | Viktoriia | Needed before Phase 3 |
+| 2 | ~~Wireframes for `design/wireframes/`.~~ Closed 2026-11-20: the two HTML exports are in `design/wireframes/`. | Viktoriia | Closed |
 | 3 | Mississippi K–3 ELA standards file | Viktoriia | Needed before Phase 1 seed |
 | 4 | Should `redistribution` / `derivatives` = "no" still allow approval? (Currently yes; they are only recorded.) | Hub / MDE | Open |
 | 5 | Myth list in `api/seed/myths.json` is a draft. Needs SME review before teachers see it. | SME (Kritika?) | Open |
-| 6 | `ingest/allowlist.json` has titles only. Need the official URLs / PDFs for the National Reading Panel report and the IES practice guide(s) to add. | Viktoriia | Open |
+| 6 | ~~Official URLs / PDFs for the NRP report and IES guides.~~ Closed 2026-11-20: the curated list (`ingest/curated_sources.yaml`) has the URLs and the PDFs are downloaded locally. | Viktoriia | Closed |
 | 7 | ~~Bedrock model access (Titan V2).~~ Titan is not approved by the Hub boundary; embeddings run locally (ADR 0004). | Viktoriia | Closed 2026-11-20 |
-| 8 | `nrp_2000` (src_0010) is rejected but the curated list says ready. Viktoriia will re-open it with the new button (reason required) and approve it. | Viktoriia | In progress |
+| 8 | ~~`nrp_2000` (src_0010) re-open and approve.~~ Closed 2026-11-20: NRP was re-opened and approved (src_0010 is approved, 571 passages). | Viktoriia | Closed |
 | 9 | No-derivatives decision for CC BY-NC-ND sources (src_0084, src_0096; `pennell_2024` src_0083 is rejected). Re-opened, kept `quote_only`, excluded from retrieval until decided. | Aidan | Open (waiting on Aidan) |
 | 10 | License sign-off for Put Reading First, NSW review and the REL PLC guide. Left as candidates with a note. | Aidan | Open (waiting on Aidan) |
 | 11 | ~~Two curated entries had no URL.~~ Added 2026-11-19. | Viktoriia | Closed |
