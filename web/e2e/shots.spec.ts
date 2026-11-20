@@ -31,6 +31,15 @@ const SHOTS: Shot[] = [
   { file: "06-make-a-story", hash: "#/teaching/story" },
   { file: "07-tomorrows-groups", hash: "#/teaching/groups" },
   { file: "08-group-plan", hash: "#/teaching/groups/g-b" },
+  {
+    file: "09-why-is-a-kid-stuck",
+    hash: "#/teaching/stuck",
+    setup: async (p) => {
+      await p.getByRole("button", { name: "ship → sip" }).click();
+      await p.getByRole("button", { name: "Find the skill" }).click();
+      await p.getByText(/Skill to work on/).waitFor();
+    },
+  },
 ];
 
 for (const s of SHOTS) {

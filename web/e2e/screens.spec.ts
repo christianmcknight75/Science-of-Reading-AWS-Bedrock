@@ -13,6 +13,7 @@ const SCREENS: { name: string; hash: string; h1: string | RegExp }[] = [
   { name: "Home", hash: "#/", h1: "What do you want to work on?" },
   { name: "Tomorrow's groups", hash: "#/teaching/groups", h1: "Tomorrow's small groups" },
   { name: "Group plan", hash: "#/teaching/groups/g-b", h1: /Group B · 15 minutes/ },
+  { name: "Why is a kid stuck?", hash: "#/teaching/stuck", h1: "Why is a kid stuck?" },
   { name: "Make a story", hash: "#/teaching/story", h1: "Make a story they can read" },
   {
     name: "Answer",
@@ -253,5 +254,27 @@ test("Group plan: unknown group says so kindly", async ({ page }) => {
   await fast(page);
   await page.goto("/#/teaching/groups/nope");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("We couldn't find that group");
+  await expectNoSeriousViolations(page);
+});
+
+test("Why is a kid stuck: common mistake finds the skill with a citation", async ({ page }) => {
+  await fast(page);
+  await page.goto("/#/teaching/stuck");
+  await page.getByRole("button", { name: "ship → sip" }).click();
+  await page.getByRole("button", { name: "Find the skill" }).click();
+  await expect(page.getByText(/Reads "sh" as just "s"/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Idea for your class" })).toBeVisible();
+  await expect(page.getByText(/Based on 1 mistake so far/)).toBeVisible();
+  await expectNoSeriousViolations(page);
+  await expectTargets(page);
+});
+
+test("Why is a kid stuck: unclear mistake is answered honestly", async ({ page }) => {
+  await fast(page);
+  await page.goto("/#/teaching/stuck");
+  await page.getByLabel("The word").fill("cat");
+  await page.getByLabel("What they said").fill("cat");
+  await page.getByRole("button", { name: "Find the skill" }).click();
+  await expect(page.getByText(/can't tell/i).first()).toBeVisible();
   await expectNoSeriousViolations(page);
 });
