@@ -96,6 +96,7 @@ export interface GroupPlan extends Marked {
 export interface StoryRequest {
   sounds: string[];
   about?: string;
+  variant?: number; // 0, 1, 2...: ask for a different story than last time
 }
 export interface Story extends Marked {
   title: string;

@@ -488,7 +488,6 @@ const LIBRARY: { title: string; text: string }[] = [
     text: "Chip and Dan chat. Chip has a map. Dan has a hat. Chip and Dan sat in the sand.",
   },
 ];
-let storyIndex = -1;
 
 export async function makeStory(req: StoryRequest): Promise<Story> {
   await delay();
@@ -501,11 +500,11 @@ export async function makeStory(req: StoryRequest): Promise<Story> {
       .filter(Boolean)
       .reduce((n, w) => n + (unknownSounds(w, known).length > 0 ? 1 : 0), 0);
   // Prefer a story whose words all use taught sounds; walk on from the last one so "new story" changes it.
-  const order = LIBRARY.map((_, i) => (storyIndex + 1 + i) % LIBRARY.length);
+  const start = (req.variant ?? 0) % LIBRARY.length;
+  const order = LIBRARY.map((_, i) => (start + i) % LIBRARY.length);
   const best = order.reduce((a, b) =>
     missing(LIBRARY[b].text) < missing(LIBRARY[a].text) ? b : a,
   );
-  storyIndex = best;
   const s = LIBRARY[best];
   return {
     example: true,

@@ -28,6 +28,7 @@ const SHOTS: Shot[] = [
   },
   { file: "04-loading", hash: ASK, slow: true },
   { file: "05-no-research", hash: "#/ask?q=How%20do%20I%20grow%20tomatoes" },
+  { file: "06-make-a-story", hash: "#/teaching/story" },
 ];
 
 for (const s of SHOTS) {

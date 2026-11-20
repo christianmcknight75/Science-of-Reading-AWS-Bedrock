@@ -11,6 +11,7 @@ import {
 // Every screen: heading, footer, 0 serious/critical axe issues, 48px targets, no sideways scroll.
 const SCREENS: { name: string; hash: string; h1: string | RegExp }[] = [
   { name: "Home", hash: "#/", h1: "What do you want to work on?" },
+  { name: "Make a story", hash: "#/teaching/story", h1: "Make a story they can read" },
   {
     name: "Answer",
     hash: "#/ask?q=My%20kids%20know%20letter%20sounds%20but%20can't%20read%20words",
@@ -152,4 +153,34 @@ test("Answer: feedback buttons report their state and add to group works", async
   await page.getByLabel("Which group?").selectOption({ label: "Group B" });
   await page.getByRole("button", { name: "Add", exact: true }).click();
   await expect(page.getByText(/Added to Group B/)).toBeVisible();
+});
+
+test("Make a story: turning a sound off flags words and blocks printing", async ({ page }) => {
+  await fast(page);
+  await page.goto("/#/teaching/story");
+  await expect(page.getByText("Every word checked")).toBeVisible();
+  await expect(page.getByTestId("story").locator('[data-status="unknown"]')).toHaveCount(0);
+  // tricky words are marked by text too, not only by style
+  await expect(page.getByTestId("story")).toContainText("tricky word, teach first");
+  const sh = page.getByRole("button", { name: "sh", exact: true });
+  await expect(sh).toHaveAttribute("aria-pressed", "true");
+  await sh.click();
+  await expect(sh).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByTestId("story").locator('[data-status="unknown"]').first()).toBeVisible();
+  await expect(page.getByText(/need a new sound|needs a new sound/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Print this story" })).toBeDisabled();
+  await expectNoSeriousViolations(page);
+  await expectTargets(page);
+});
+
+test("Make a story: a new story that fits the sounds can be added to a group's plan", async ({
+  page,
+}) => {
+  await fast(page);
+  await page.goto("/#/teaching/story");
+  await page.getByRole("button", { name: "Make a new story" }).click();
+  await expect(page.getByText("Every word checked")).toBeVisible();
+  await page.getByRole("button", { name: "Add to a group's plan" }).click();
+  await page.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(page.getByText(/Added to Group A/)).toBeVisible();
 });
