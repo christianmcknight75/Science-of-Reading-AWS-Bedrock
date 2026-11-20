@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .admin import router as admin_router
+from .qa import router as qa_router
 
 app = FastAPI(title="Reading Helper API", version="0.1.0")
 app.add_middleware(
@@ -13,6 +14,7 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 app.include_router(admin_router)
+app.include_router(qa_router)
 
 
 @app.get("/health")

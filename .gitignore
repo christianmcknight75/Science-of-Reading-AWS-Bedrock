@@ -40,3 +40,4 @@ playwright-report
 
 # macOS
 .DS_Store
+evals/reports/
