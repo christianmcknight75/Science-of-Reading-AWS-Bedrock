@@ -37,3 +37,6 @@ docs/PLAN.md
 docs/DECISIONS.md
 test-results
 playwright-report
+
+# macOS
+.DS_Store

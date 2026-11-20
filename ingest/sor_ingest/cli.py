@@ -100,37 +100,57 @@ def _download(url: str, dest: Path) -> None:
     dest.write_bytes(data)
 
 
+GRADE_SUFFIX = {"k": "K", "g1": "1", "g2": "2", "g3": "3"}
+
+
+def _local_files(source_id: str) -> list[tuple[Path, str | None]]:
+    """PDFs for a source: `<id>.pdf`, or one per grade named `<id>_k.pdf`, `<id>_g1.pdf`, ..."""
+    single = PDF_DIR / f"{source_id}.pdf"
+    if single.exists():
+        return [(single, None)]
+    files = []
+    for f in sorted(PDF_DIR.glob(f"{source_id}_*.pdf")):
+        suffix = f.stem.removeprefix(f"{source_id}_").lower()
+        files.append((f, GRADE_SUFFIX.get(suffix, suffix.upper())))
+    order = {g: i for i, g in enumerate(["K", "1", "2", "3"])}
+    return sorted(files, key=lambda fg: order.get(fg[1] or "", 99))
+
+
 def cmd_process(args: argparse.Namespace) -> int:
     embedder = get_embedder(args.embedder)
     done = skipped = 0
     with store.connect() as conn:
-        for source_id, pdf_url, rated in store.approved_unprocessed(conn):
-            pdf = PDF_DIR / f"{source_id}.pdf"
-            if not pdf.exists():
+        for source_id, pdf_url, rated in store.approved_sources(conn, args.all):
+            files = _local_files(source_id)
+            if not files:
                 if not pdf_url:
                     print(f"{source_id}: no pdf_url and no local file; skipping")
+                    skipped += 1
                     continue
+                pdf = PDF_DIR / f"{source_id}.pdf"
                 try:
                     _download(pdf_url, pdf)
                 except (OSError, ValueError) as exc:  # URLError and HTTPError are OSErrors
                     print(f"{source_id}: download failed ({exc}); skipping")
                     skipped += 1
                     continue
+                files = [(pdf, None)]
+            blocks = []
             try:
-                blocks = parse_pdf(pdf)
+                for pdf, grade in files:
+                    part = parse_pdf(pdf, grade)
+                    blocks.extend(annotate_recommendations(part) if rated else part)
             except Exception as exc:  # noqa: BLE001 (unreadable file: report and go on)
-                print(f"{source_id}: could not read {pdf.name} ({exc}); skipping")
+                print(f"{source_id}: could not read a PDF ({exc}); skipping")
                 skipped += 1
                 continue
-            if rated:
-                blocks = annotate_recommendations(blocks)
             passages = chunk_blocks(source_id, blocks)
             if rated and not any(p.evidence_rating for p in passages):
                 print(f"WARNING {source_id}: no evidence ratings found; treated as 'Not sure yet'")
             n = store.upsert_passages(
                 conn, source_id, passages, [embedder.embed(p.text) for p in passages]
             )
-            print(f"{source_id}: {n} passages")
+            print(f"{source_id}: {n} passages from {len(files)} file(s)")
             done += 1
     print(f"processed {done} sources, skipped {skipped}")
     return 0
@@ -157,6 +177,7 @@ def main(argv: list[str] | None = None) -> int:
     co.set_defaults(fn=cmd_correct)
     pr = sub.add_parser("process")
     pr.add_argument("--embedder", choices=["stub", "titan"], default="stub")
+    pr.add_argument("--all", action="store_true", help="also re-process sources that have passages")
     pr.set_defaults(fn=cmd_process)
     args = p.parse_args(argv)
     return int(args.fn(args))

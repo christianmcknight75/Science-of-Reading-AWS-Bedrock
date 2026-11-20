@@ -24,4 +24,6 @@ def test_parse_keeps_sections_and_pages(tmp_path: Path) -> None:
     blocks = [b for b in parse_pdf(pdf) if b.text]
     assert [(b.section, b.page) for b in blocks] == [("Phonemic Awareness", 1), ("Phonics", 2)]
     ps = chunk_blocks("src_0001", blocks)
-    assert [(p.section, p.page) for p in ps] == [("Phonemic Awareness", 1), ("Phonics", 2)]
+    # two short sections are merged into one passage that keeps both headings and both pages
+    assert [(p.section, p.page, p.page_end) for p in ps] == [("Phonemic Awareness", 1, 2)]
+    assert "Phonics\n\n" in ps[0].text

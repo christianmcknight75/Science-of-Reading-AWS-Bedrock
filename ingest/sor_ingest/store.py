@@ -68,17 +68,21 @@ def add_candidate(conn: psycopg.Connection[Any], rec: dict[str, Any]) -> str | N
     return sid
 
 
-def approved_unprocessed(conn: psycopg.Connection[Any]) -> list[tuple[str, str | None, bool]]:
-    """(source_id, pdf_url, has_evidence_ratings) for approved sources with no passages yet.
-    WWC practice guides carry a Strong/Moderate/Minimal rating per recommendation."""
+def approved_sources(
+    conn: psycopg.Connection[Any], include_processed: bool = False
+) -> list[tuple[str, str | None, bool]]:
+    """(source_id, pdf_url, has_evidence_ratings) for approved sources. By default only those with
+    no passages yet. WWC practice guides carry a Strong/Moderate/Minimal rating per
+    recommendation."""
     rows = conn.execute(
         """SELECT s.source_id, s.pdf_url,
                   (s.source_type = 'practice_guide'
                    AND s.publisher ILIKE '%%What Works Clearinghouse%%') AS rated
            FROM sources s
            WHERE s.status = 'approved'
-             AND NOT EXISTS (SELECT 1 FROM passages p WHERE p.source_id = s.source_id)
-           ORDER BY s.source_id"""
+             AND (%s OR NOT EXISTS (SELECT 1 FROM passages p WHERE p.source_id = s.source_id))
+           ORDER BY s.source_id""",
+        (include_processed,),
     ).fetchall()
     return [(r[0], r[1], bool(r[2])) for r in rows]
 
@@ -100,11 +104,12 @@ def upsert_passages(
     for p, emb in zip(passages, embeddings, strict=True):
         vec = "[" + ",".join(f"{x:.8f}" for x in emb) + "]"
         conn.execute(
-            """INSERT INTO passages (passage_id, source_id, section, page, text, embedding,
-                                     recommendation, evidence_rating)
-               VALUES (%s,%s,%s,%s,%s,%s::vector,%s,%s)
+            """INSERT INTO passages (passage_id, source_id, section, page, page_end, grade, text,
+                                     embedding, recommendation, evidence_rating)
+               VALUES (%s,%s,%s,%s,%s,%s,%s,%s::vector,%s,%s)
                ON CONFLICT (passage_id) DO UPDATE SET
-                 section = EXCLUDED.section, page = EXCLUDED.page, text = EXCLUDED.text,
+                 section = EXCLUDED.section, page = EXCLUDED.page, page_end = EXCLUDED.page_end,
+                 grade = EXCLUDED.grade, text = EXCLUDED.text,
                  embedding = EXCLUDED.embedding, recommendation = EXCLUDED.recommendation,
                  evidence_rating = EXCLUDED.evidence_rating, version = passages.version + 1""",
             (
@@ -112,6 +117,8 @@ def upsert_passages(
                 source_id,
                 p.section,
                 p.page,
+                p.page_end if p.page_end is not None else p.page,
+                p.grade,
                 p.text,
                 vec,
                 p.recommendation,

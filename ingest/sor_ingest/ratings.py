@@ -20,6 +20,14 @@ RESET_RE = re.compile(
 )
 
 
+def _start(text: str) -> re.Match[str] | None:
+    """A recommendation's own heading. A line that lists several recommendations (a table of
+    contents or an overview) is not the start of any one of them."""
+    if len(re.findall(r"Recommendation\s+\d+", text, re.IGNORECASE)) != 1:
+        return None
+    return REC_RE.match(text)
+
+
 def annotate_recommendations(blocks: list[Block]) -> list[Block]:
     """Fill in `recommendation` and `evidence_rating` on blocks where the document has them."""
     rec_key: str | None = None
@@ -30,10 +38,10 @@ def annotate_recommendations(blocks: list[Block]) -> list[Block]:
         heading = b.section or ""
         if RESET_RE.match(heading):
             rec_key = None
-        m = REC_RE.match(heading) or (REC_RE.match(b.text) if b.text.strip() else None)
+        m = _start(heading) or (_start(b.text) if b.text.strip() else None)
         if m:
             rec_key = f"Recommendation {m.group(1)}"
-            rec_label.setdefault(rec_key, (heading if REC_RE.match(heading) else b.text)[:200])
+            rec_label.setdefault(rec_key, (heading if _start(heading) else b.text)[:200])
         keys.append(rec_key)
         if rec_key:
             found = LEVEL_RE.search(heading) or LEVEL_RE.search(b.text)

@@ -36,3 +36,17 @@ def test_rating_applies_to_the_whole_recommendation_only() -> None:
 def test_no_rating_found_stays_none() -> None:
     blocks = [Block("", 1, "Recommendation 1. X"), Block(WORDS, 1, "Recommendation 1. X")]
     assert all(b.evidence_rating is None for b in annotate_recommendations(blocks))
+
+
+def test_a_line_listing_all_recommendations_is_not_a_heading() -> None:
+    blocks = [
+        Block("", 5, "Recommendation 1 Recommendation 2 Recommendation 3"),
+        Block(WORDS, 5, "Recommendation 1 Recommendation 2 Recommendation 3"),
+        Block("", 10, "Recommendation 1. Teach academic language"),
+        Block("Level of evidence: Minimal", 10, "Recommendation 1. Teach academic language"),
+        Block(WORDS, 10, "Recommendation 1. Teach academic language"),
+    ]
+    out = annotate_recommendations(blocks)
+    assert out[1].recommendation is None  # the overview line belongs to no recommendation
+    assert out[4].recommendation == "Recommendation 1. Teach academic language"
+    assert out[4].evidence_rating == "Minimal"
