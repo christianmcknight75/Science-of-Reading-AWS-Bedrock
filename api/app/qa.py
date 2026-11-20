@@ -49,6 +49,14 @@ def conn_dep() -> Iterator[psycopg.Connection[dict[str, Any]]]:
     yield from get_conn()
 
 
+def guard(user: str, s: Settings) -> None:
+    """Kill switch, then the per-user rate limit. Shared by every model-backed endpoint."""
+    if not s.qa_enabled:
+        raise HTTPException(503, "Reading Helper is switched off right now.")
+    if not _limiter(s.rate_limit_per_minute).allow(user):
+        raise HTTPException(429, "Too many requests. Please wait a minute and try again.")
+
+
 @router.post("/ask", response_model=AnswerResponse)
 def ask(
     req: AskRequest,
@@ -59,8 +67,5 @@ def ask(
     embedder: Annotated[QueryEmbedder, Depends(get_embedder)],
     redactor: Annotated[Redactor, Depends(get_redact)],
 ) -> AnswerResponse:
-    if not s.qa_enabled:  # kill switch
-        raise HTTPException(503, "Reading Helper Q&A is switched off right now.")
-    if not _limiter(s.rate_limit_per_minute).allow(user):
-        raise HTTPException(429, "Too many questions. Please wait a minute and try again.")
+    guard(user, s)
     return Engine(conn, llm, embedder, redactor, s).ask(req)

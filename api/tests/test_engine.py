@@ -150,7 +150,7 @@ def test_pii_is_redacted_before_the_model_and_the_log(monkeypatch: pytest.Monkey
     engine, conn = make(monkeypatch, [passage()], llm)
     engine.ask(AskRequest(question="How can I teach Jamal to blend sounds in words?"))
     assert all("Jamal" not in c["user"] for c in llm.calls)
-    assert "Jamal" not in conn.logged[0][0] and "[PERSON]" in conn.logged[0][0]
+    assert "Jamal" not in conn.logged[0][1] and "[PERSON]" in conn.logged[0][1]
     assert conn.commits == 1
 
 
@@ -159,7 +159,8 @@ def test_query_log_has_redacted_text_ids_label_latency_and_verifier(
 ) -> None:
     engine, conn = make(monkeypatch, [passage()], FakeLLM(GOOD_ANSWER))
     engine.ask(Q)
-    redacted, ids, answer, label, ms, meta = conn.logged[0]
+    feature, redacted, ids, answer, label, ms, meta = conn.logged[0]
+    assert feature == "qa"
     assert ids == ["src_0011_p001"] and label == "Very sure" and ms >= 0
     assert json.loads(meta)["verifier"]["ok"] is True and json.loads(meta)["tokens"] > 0
     assert "blend" in answer

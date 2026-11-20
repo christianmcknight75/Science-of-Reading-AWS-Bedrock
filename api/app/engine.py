@@ -18,7 +18,7 @@ import psycopg
 from . import modelconfig, myths, retrieval
 from .config import Settings
 from .embedding import QueryEmbedder
-from .evidence import CitedPassage, evidence_result
+from .evidence import CitedPassage, EvidenceResult, evidence_result
 from .llm import LLM, LLMError
 from .prompt import ANSWER_TOOL, SYSTEM, build_answer_prompt
 from .redact import Redactor
@@ -57,7 +57,7 @@ class Engine:
         meta: dict[str, Any] = {}
         redacted = self.redactor.redact(req.question)
         response, retrieved_ids = self._run(req, redacted, meta)
-        response.content_last_updated = self._last_updated()
+        response.content_last_updated = self.last_updated()
         self._log(redacted, retrieved_ids, response, int((self.clock() - started) * 1000), meta)
         return response
 
@@ -144,10 +144,8 @@ class Engine:
         result: Any,
         meta: dict[str, Any],
     ) -> AnswerResponse:
-        numbers: dict[str, int] = {}
-        for c in kept:
-            for pid in c.passage_ids:
-                numbers.setdefault(pid, len(numbers) + 1)
+        cited = cite(kept, retrieved, result.contradicted_passage_ids)
+        numbers = cited.numbers
 
         # myth check: the correction is shown only with its own cited passages
         watch: WatchOut | None = None
@@ -168,20 +166,9 @@ class Engine:
             )
             break
 
-        quotes = {pid: c.quote for c in reversed(kept) for pid in c.passage_ids}
-        sources = [
-            _source_out(n, retrieved[pid], quotes.get(pid))
-            for pid, n in sorted(numbers.items(), key=lambda kv: kv[1])
-        ]
-        research = [
-            ResearchClaim(text=c.text, citations=[numbers[pid] for pid in c.passage_ids])
-            for c in kept
-        ]
-        cited_ids = {pid for c in kept for pid in c.passage_ids}
-        evidence = evidence_result(
-            [_cited(retrieved[pid], contradicts=False) for pid in cited_ids]
-            + [_cited(retrieved[pid], contradicts=True) for pid in result.contradicted_passage_ids]
-        )
+        sources = sources_out(numbers, retrieved, cited.quotes)
+        research = cited.research
+        evidence = cited.evidence
         return AnswerResponse(
             kind="answer",
             evidence_label=evidence.label,
@@ -196,30 +183,44 @@ class Engine:
         )
 
     # ------------------------------------------------------------------ logging
-    def _last_updated(self) -> str | None:
+    def last_updated(self) -> str | None:
         row = self.conn.execute(
             "SELECT max(approved_at) AS d FROM sources WHERE status = 'approved'"
         ).fetchone()
         return row["d"].date().isoformat() if row and row["d"] else None
 
+    def log(
+        self,
+        feature: str,
+        redacted: str,
+        ids: list[str],
+        summary: str,
+        label: str,
+        ms: int,
+        meta: dict[str, Any],
+    ) -> int | None:
+        """One query_log row. Redacted text only (Public Records Act: logs are records)."""
+        row = self.conn.execute(
+            """INSERT INTO query_log (feature, redacted_question, passage_ids, answer,
+                                      evidence_label, latency_ms, verifier_result)
+               VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb) RETURNING id""",
+            (feature, redacted, ids, summary, label, ms, json.dumps(meta)),
+        ).fetchone()
+        self.conn.commit()
+        return int(row["id"]) if row and row.get("id") is not None else None
+
     def _log(
         self, redacted: str, ids: list[str], r: AnswerResponse, ms: int, meta: dict[str, Any]
     ) -> None:
-        """Redacted text only (Public Records Act: logs are records)."""
-        self.conn.execute(
-            """INSERT INTO query_log (feature, redacted_question, passage_ids, answer,
-                                      evidence_label, latency_ms, verifier_result)
-               VALUES ('qa', %s, %s, %s, %s, %s, %s::jsonb)""",
-            (
-                redacted,
-                ids,
-                r.short_answer or r.message,
-                r.evidence_label,
-                ms,
-                json.dumps({"kind": r.kind, **meta}),
-            ),
+        r.query_id = self.log(
+            "qa",
+            redacted,
+            ids,
+            r.short_answer or r.message,
+            r.evidence_label,
+            ms,
+            {"kind": r.kind, **meta},
         )
-        self.conn.commit()
 
 
 _INSUFFICIENT = (
@@ -236,6 +237,41 @@ def _non_answer(kind: str, message: str) -> AnswerResponse:
         offer=OFFER,
         disclaimer=DISCLAIMER,
     )
+
+
+@dataclass
+class Cited:
+    numbers: dict[str, int]
+    research: list[ResearchClaim]
+    quotes: dict[str, str]
+    evidence: EvidenceResult
+
+
+def cite(kept: list[Claim], retrieved: dict[str, Passage], contradicted_ids: list[str]) -> Cited:
+    """Citation numbers (in order of first use), cited claims, quotes and the rule-based label."""
+    numbers: dict[str, int] = {}
+    for c in kept:
+        for pid in c.passage_ids:
+            numbers.setdefault(pid, len(numbers) + 1)
+    research = [
+        ResearchClaim(text=c.text, citations=[numbers[pid] for pid in c.passage_ids]) for c in kept
+    ]
+    quotes = {pid: c.quote for c in reversed(kept) for pid in c.passage_ids}
+    cited_ids = {pid for c in kept for pid in c.passage_ids}
+    evidence = evidence_result(
+        [_cited(retrieved[pid], contradicts=False) for pid in cited_ids]
+        + [_cited(retrieved[pid], contradicts=True) for pid in contradicted_ids]
+    )
+    return Cited(numbers, research, quotes, evidence)
+
+
+def sources_out(
+    numbers: dict[str, int], retrieved: dict[str, Passage], quotes: dict[str, str]
+) -> list[SourceOut]:
+    return [
+        _source_out(n, retrieved[pid], quotes.get(pid))
+        for pid, n in sorted(numbers.items(), key=lambda kv: kv[1])
+    ]
 
 
 def parse_draft(data: dict[str, Any] | None) -> Draft | None:

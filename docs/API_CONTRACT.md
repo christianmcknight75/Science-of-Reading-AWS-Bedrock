@@ -31,6 +31,8 @@ interface Meta { disclaimer: string; content_last_updated: string | null; query_
 `POST /api/ask` body `{question: string (1-1000), grade?: Grade}` -> `AnswerResponse` (`api/app/schemas.py`; unchanged). `kind` is `answer | no_research | insufficient | out_of_scope | unavailable`. **Change vs the frontend's types:** `query_id` was added to `AnswerResponse`.
 
 ## Group plan
+Every response below that has `evidence_label` also has `mixed: boolean` (**added**: true when cited evidence disagrees; the label is then capped at "Not sure yet" and the app should say the research is mixed).
+
 `POST /api/group-plan` body `{focus: Skill, sounds: string[] (0-12 items, each 1-4 letters, "a_e" allowed), grade?: Grade}`
 
 ```ts
@@ -45,7 +47,7 @@ interface GroupPlan extends Meta { minutes: number;        // sum of steps
 Groups themselves (label, size) stay on the teacher's device; the server never receives them.
 
 ## Story ("Make a story")
-`POST /api/story` body `{sounds: string[] (1-12), about?: string (<= 60 chars, redacted), variant?: number (0-9), heart_words?: string[] (<= 20)}`
+`POST /api/story` body `{sounds: string[] (1-12), about?: string (<= 60 chars, redacted), variant?: number (0-9), heart_words?: string[] (<= 20)}`. `heart_words` replaces the default list when sent (an empty list means no heart words); when omitted the draft default list (`api/seed/heart_words.json`) is used.
 
 ```ts
 interface WordCheck { word: string; status: "decodable" | "heart_word" | "not_decodable" | "unknown";
@@ -120,3 +122,6 @@ Bootstrap: the first admin is created from the command line (`uv run python -m a
 
 ## Open items
 See `docs/OPEN_QUESTIONS.md` 20-26.
+
+## Where the model is involved (so the frontend knows what can vary)
+`group-plan`, `story`, `stuck`, `training/topics/{id}`, `refresher/today` and `ask` call the model through the same guarded path (kill switch, rate limit, retrieval, verifier). `decodable/check`, `training/topics`, `feedback` and the account endpoints never call a model and keep working when the kill switch is off.

@@ -43,7 +43,11 @@ class FakeLLM:
         checks: list[str] | str | None = "supported",
         fail_answer: bool = False,
         fail_check: bool = False,
+        scripts: dict[str, Any] | None = None,
     ) -> None:
+        # scripts: tool name -> payload, or a list of payloads handed out one per call
+        self.scripts = scripts or {}
+        self.counts: dict[str, int] = {}
         self.answer = answer
         self.checks = checks
         self.fail_answer = fail_answer
@@ -56,6 +60,13 @@ class FakeLLM:
         self.calls.append(
             {"model_id": model_id, "tool": tool.name, "user": user, "max_tokens": max_tokens}
         )
+        if tool.name in self.scripts:
+            payload = self.scripts[tool.name]
+            n = self.counts.get(tool.name, 0)
+            self.counts[tool.name] = n + 1
+            if isinstance(payload, list):
+                payload = payload[min(n, len(payload) - 1)]
+            return LLMResult(payload, "", 1500, 300)
         if tool.name == "submit_answer":
             if self.fail_answer:
                 raise LLMError("boom")
@@ -86,11 +97,19 @@ class FakeConn:
         self.logged: list[tuple[Any, ...]] = []
         self.myth_rows = myth_rows or []
         self.commits = 0
+        self.feedback: list[Any] = []
+        self.known_ids: set[int] = {1}
 
     def execute(self, sql: str, params: Any = None) -> Cursor:
+        if "INSERT INTO query_log" in sql and "'feedback'" in sql:
+            self.feedback.append(("unlinked", params[0]))
+            return Cursor([])
         if "INSERT INTO query_log" in sql:
             self.logged.append(params)
-            return Cursor([])
+            return Cursor([{"id": len(self.logged)}])
+        if "UPDATE query_log" in sql:
+            self.feedback.append(params)
+            return Cursor([{"id": params[1]}] if params[1] in self.known_ids else [])
         if "FROM myths" in sql:
             return Cursor(self.myth_rows)
         if "max(approved_at)" in sql:

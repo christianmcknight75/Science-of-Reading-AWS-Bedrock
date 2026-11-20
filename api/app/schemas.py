@@ -104,3 +104,4 @@ class AnswerResponse(BaseModel):
     offer: str = ""  # what we can help with
     disclaimer: str = DISCLAIMER
     content_last_updated: str | None = None
+    query_id: int | None = None
