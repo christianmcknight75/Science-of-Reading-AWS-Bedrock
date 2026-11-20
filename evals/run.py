@@ -112,6 +112,10 @@ class ScriptedLLM:
         return LLMResult({"answerable": True, "claims": [claim], "steps": []}, "", 4000, 120)
 
 
+def _as_list(v: Any) -> list[str]:
+    return [] if v is None else ([v] if isinstance(v, str) else list(v))
+
+
 def load_questions() -> list[dict[str, Any]]:
     data = yaml.safe_load((ROOT / "questions.yaml").read_text())
     ids = [q["id"] for q in data]
@@ -139,7 +143,12 @@ def run_retrieval_only(
                 recent_years=s.recent_years,
                 grade=q.get("grade"),
             )
-        kind = "out_of_scope" if r.kind != "answer" else ("answer" if found else "no_research")
+        if r.kind == "off_topic":
+            kind = "no_research"
+        elif r.kind != "answer":
+            kind = "out_of_scope"
+        else:
+            kind = "answer" if found else "no_research"
         out.append(
             Result(
                 id=q["id"],
@@ -190,7 +199,8 @@ def run_pipeline(
                 raw_cited=sum(len(set(c.get("passage_ids", []))) for c in counting.answer_claims),
                 quotes=[(x.quote, x.passage_text) for x in resp.sources if x.quote],
                 pii_leaked=leaked,
-                myth_expected=q.get("myth_id"),
+                myth_expected=_as_list(q.get("myth_id")),
+                source=q.get("source", "claude-draft"),
                 myth_detected=meta.get("myths_detected", []),
                 input_tokens=counting.input_tokens,
                 output_tokens=counting.output_tokens,
@@ -265,11 +275,12 @@ def write_report(
         "",
         "## Per question",
         "",
-        "| id | expected | got | label | latency ms | cited |",
+        "| id | source | expected | got | label | latency ms | cited |",
         "|---|---|---|---|---|---|",
     ]
     lines += [
-        f"| {r.id} | {r.expected} | {r.kind} | {r.label} | {r.latency_ms} | {len(r.cited_ids)} |"
+        f"| {r.id} | {r.source} | {r.expected} | {r.kind} | {r.label} | "
+        f"{r.latency_ms} | {len(r.cited_ids)} |"
         for r in results
     ]
     path = out_dir / f"{stamp}-{mode}.md"

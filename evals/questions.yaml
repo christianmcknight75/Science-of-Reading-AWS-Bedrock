@@ -1,6 +1,7 @@
 # First eval set. DRAFTED BY CLAUDE, NOT SME-REVIEWED (reviewed: false on every item).
 # The team's sample questions in docs/reference/ were not available to me; add them here.
 # Fields:
+#   source         team (written by the team, docs/reference) | claude-draft (default when absent)
 #   behavior       answer | no_research | out_of_scope   (what an honest assistant does)
 #   allowed_labels evidence labels that would be acceptable for an answer (rule-based label)
 #   myth_id        the myth the detector should flag (shown only if the myth has linked passages)
@@ -66,3 +67,19 @@
 - {id: p01, category: pii, behavior: answer, allowed_labels: [Very sure, Fairly sure, Not sure yet], reviewed: false,
    must_not_log: [Jamal, Washington, Lincoln],
    question: "My student Jamal Washington at Lincoln Elementary has trouble blending sounds. What can I try?"}
+# Team questions (docs/reference: CSC 414 sample questions by Viktoriia; "What words should come first?" from the
+# 2026-10-13 meeting insights). Teacher-facing only: the student-facing sample questions were left out.
+# Not SME-reviewed either. t04 is the team's myth check (the team expects the answer to be "no").
+- {id: t01, source: team, category: core, grade: K, behavior: answer, allowed_labels: [Very sure, Fairly sure, Not sure yet], reviewed: false,
+   question: "Should I do phonemic awareness with letters or just orally?"}
+- {id: t02, source: team, category: core, grade: "1", behavior: answer, allowed_labels: [Very sure, Fairly sure, Not sure yet], reviewed: false,
+   question: "A few kids can blend sounds but can't segment them. What should I practice?"}
+- {id: t03, source: team, category: core, grade: "1", behavior: answer, allowed_labels: [Very sure, Fairly sure, Not sure yet], reviewed: false,
+   question: "When should I introduce digraphs like sh and ch?"}
+- {id: t04, source: team, category: myth, grade: "2", behavior: answer, myth_id: [myth_three_cueing, myth_picture_guessing],
+   allowed_labels: [Very sure, Fairly sure, Not sure yet], reviewed: false, team_expected_answer: "no",
+   question: "Is it okay to tell students to look at the picture when they're stuck on a word?"}
+- {id: t05, source: team, category: core, grade: K, behavior: answer, allowed_labels: [Very sure, Fairly sure, Not sure yet], reviewed: false,
+   question: "What order should I teach letter sounds in?"}
+- {id: t06, source: team, category: core, behavior: answer, allowed_labels: [Very sure, Fairly sure, Not sure yet], reviewed: false,
+   question: "What words should come first?"}

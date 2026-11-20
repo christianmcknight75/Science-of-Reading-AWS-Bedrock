@@ -35,9 +35,18 @@ _EVALUATION = re.compile(
 )
 
 
+_LITERACY = re.compile(
+    r"\b(read\w*|phon\w+|phoneme\w*|sound\w*|letter\w*|word\w*|decod\w+|blend\w*|segment\w*|"
+    r"vocabular\w*|comprehen\w+|fluen\w+|fluent|spell\w*|syllab\w*|digraph\w*|grapheme\w*|"
+    r"text|texts|stor(y|ies)|literacy|dyslex\w*|alphabet\w*|print|rhym\w*|oral language|"
+    r"sight words?|heart words?|phonics|writing|sequenc\w+)\b",
+    re.I,
+)
+
+
 @dataclass(frozen=True)
 class Route:
-    kind: str  # "answer" | "out_of_scope" | "clarify"
+    kind: str  # "answer" | "out_of_scope" | "clarify" | "off_topic"
     reason: str = ""
     reply: str = ""
 
@@ -73,4 +82,8 @@ def route(question: str) -> Route:
             "I don't recommend or compare specific programs, curricula or products. I can share "
             "what research says about the teaching practices behind them.",
         )
+    if not _LITERACY.search(q):
+        # Similarity alone cannot tell "fractions" from "phonics" (BGE scores overlap), so a
+        # question with no reading vocabulary at all is treated as outside the library.
+        return Route("off_topic", "no_literacy_terms")
     return Route("answer")

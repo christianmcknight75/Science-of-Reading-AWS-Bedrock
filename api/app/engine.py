@@ -67,6 +67,15 @@ class Engine:
     ) -> tuple[AnswerResponse, list[str]]:
         r = route(redacted)
         meta["route"] = r.kind
+        if r.kind == "off_topic":
+            meta["route_reason"] = r.reason
+            return (
+                _non_answer(
+                    "no_research",
+                    "I did not find research in my library that answers this, so I won't guess.",
+                ),
+                [],
+            )
         if r.kind != "answer":
             meta["route_reason"] = r.reason
             return _non_answer("out_of_scope", r.reply), []

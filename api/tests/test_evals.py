@@ -75,7 +75,7 @@ def test_pii_leak_and_slow_p95_fail_gates() -> None:
 
 
 def test_label_and_myth_rates() -> None:
-    results = [res(), res(label="Not sure yet", myth_expected="m1", myth_detected=["m1"])]
+    results = [res(), res(label="Not sure yet", myth_expected=["m1", "m2"], myth_detected=["m2"])]
     s = summarize(results, quote_in)
     assert s["label_correct_rate"] == 0.5 and s["myth_detected_rate"] == 1.0
 
@@ -87,7 +87,9 @@ def test_nothing_to_measure_is_not_a_silent_pass() -> None:
 
 def test_question_file_is_well_formed_and_marked_unreviewed() -> None:
     qs = run.load_questions()
-    assert len(qs) >= 30
+    assert len(qs) >= 36
+    assert sum(1 for q in qs if q.get("source") == "team") == 6
+    assert not any("letter we are learning today" in q["question"] for q in qs)  # student-facing
     cats = {q["category"] for q in qs}
     assert {"core", "myth", "no_research", "out_of_scope", "pii"} <= cats
     assert all(q["behavior"] in ("answer", "no_research", "out_of_scope") for q in qs)

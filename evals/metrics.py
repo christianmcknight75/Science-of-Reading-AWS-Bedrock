@@ -28,7 +28,8 @@ class Result:
     raw_cited: int = 0
     quotes: list[tuple[str, str]] = field(default_factory=list)  # (quote, passage text) shown
     pii_leaked: bool = False
-    myth_expected: str | None = None
+    myth_expected: list[str] = field(default_factory=list)  # any of these counts
+    source: str = "claude-draft"
     myth_detected: list[str] = field(default_factory=list)
     input_tokens: int = 0
     output_tokens: int = 0
@@ -60,11 +61,12 @@ def summarize(results: list[Result], quote_in: Any) -> dict[str, Any]:
     answer_den = [r for r in results if r.expected == "answer"]
     answer_ok = sum(1 for r in answer_den if r.kind == "answer")
     myth_den = [r for r in results if r.myth_expected]
-    myth_ok = sum(1 for r in myth_den if r.myth_expected in r.myth_detected)
+    myth_ok = sum(1 for r in myth_den if set(r.myth_expected) & set(r.myth_detected))
     tin = sum(r.input_tokens for r in results)
     tout = sum(r.output_tokens for r in results)
     return {
         "questions": len(results),
+        "questions_from_team": sum(1 for r in results if r.source == "team"),
         "fabricated_citations_shown": not_retrieved,
         "citations_shown": shown,
         "model_fabricated_before_verifier": sum(r.raw_fabricated for r in results),

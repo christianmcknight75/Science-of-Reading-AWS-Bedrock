@@ -212,3 +212,13 @@ def test_myth_without_linked_sources_is_logged_but_not_shown(
     r = engine.ask(AskRequest(question="Is three cueing a good way to teach blending?"))
     meta = json.loads(conn.logged[0][-1])
     assert r.watch_out is None and meta["myths_without_sources"] == ["myth_three_cueing"]
+
+
+def test_off_topic_question_is_no_research_without_retrieval_or_model(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    llm = FakeLLM(GOOD_ANSWER)
+    engine, _ = make(monkeypatch, [passage()], llm)
+    monkeypatch.setattr(retrieval, "search", lambda *a, **k: pytest.fail("searched"))
+    r = engine.ask(AskRequest(question="How do I teach fractions to third graders?"))
+    assert r.kind == "no_research" and r.evidence_label == "No research found" and llm.calls == []

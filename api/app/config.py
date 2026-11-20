@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     max_output_tokens: int = 900
     claim_check_max_tokens: int = 500
     retrieval_top_k: int = 6
-    min_similarity: float = 0.70  # provisional: calibrated on 16 questions (see DECISIONS.md)
+    min_similarity: float = 0.62  # provisional: calibrated on 38 questions (see DECISIONS.md)
     recent_years: int = 10  # studies/meta-analyses older than this are dropped unless allow-listed
 
 

@@ -60,3 +60,29 @@ def test_presidio_removes_names_schools_contacts_and_ids() -> None:
 def test_presidio_leaves_a_plain_teaching_question_alone() -> None:
     q = "How do I teach phonemic awareness to kindergartners?"
     assert PresidioRedactor().redact(q) == q
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "What is the capital of France?",
+        "How do I teach fractions to third graders?",
+        "How does photosynthesis work in plants?",
+        "How do I bake sourdough bread at home?",
+    ],
+)
+def test_questions_with_no_reading_vocabulary_are_off_topic(question: str) -> None:
+    assert route(question).kind == "off_topic"
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "When should I introduce digraphs like sh and ch?",
+        "What words should come first?",
+        "Is it okay to tell students to look at the picture when they're stuck on a word?",
+        "What order should I teach letter sounds in?",
+    ],
+)
+def test_the_teams_own_questions_are_on_topic(question: str) -> None:
+    assert route(question).kind == "answer"
