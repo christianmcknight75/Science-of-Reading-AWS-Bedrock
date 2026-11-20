@@ -9,6 +9,8 @@ import GroupPlan from "./screens/GroupPlan";
 import Groups from "./screens/Groups";
 import Home from "./screens/Home";
 import Refreshers from "./screens/Refreshers";
+import SettingsScreen from "./screens/SettingsScreen";
+import ClassBoard from "./screens/ClassBoard";
 import Stuck from "./screens/Stuck";
 import Training from "./screens/Training";
 import TrainingTopic from "./screens/TrainingTopic";
@@ -42,6 +44,8 @@ function route(path: string, query: URLSearchParams): { node: ReactNode; board?:
   if (path === "/teaching" || path === "/teaching/groups") return { node: <Groups /> };
   const plan = match("/teaching/groups/:id", path);
   if (plan) return { node: <GroupPlan id={plan.id} /> };
+  if (path === "/settings") return { node: <SettingsScreen /> };
+  if (path === "/board") return { node: <ClassBoard />, board: true };
   if (path === "/training") return { node: <Training /> };
   if (path === "/training/refreshers") return { node: <Refreshers /> };
   const topic = match("/training/topic/:id", path);

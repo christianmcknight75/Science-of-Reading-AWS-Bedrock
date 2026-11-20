@@ -31,6 +31,11 @@ const SHOTS: Shot[] = [
   { file: "06-make-a-story", hash: "#/teaching/story" },
   { file: "07-tomorrows-groups", hash: "#/teaching/groups" },
   { file: "08-group-plan", hash: "#/teaching/groups/g-b" },
+  { file: "13-settings", hash: "#/settings" },
+  {
+    file: "14-class-board",
+    hash: "#/board?mode=words&title=Robot%20Talk&group=Group%20B&skill=putting%20sounds%20together&words=sat,pin,fan",
+  },
   { file: "10-my-training", hash: "#/training" },
   { file: "11-training-topic", hash: "#/training/topic/segmenting" },
   { file: "12-refreshers", hash: "#/training/refreshers" },

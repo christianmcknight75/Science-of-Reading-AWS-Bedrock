@@ -17,6 +17,7 @@ const SCREENS: { name: string; hash: string; h1: string | RegExp }[] = [
   { name: "My training", hash: "#/training", h1: "Turn your training into practice" },
   { name: "Training topic", hash: "#/training/topic/segmenting", h1: "Breaking words into sounds" },
   { name: "1-minute refreshers", hash: "#/training/refreshers", h1: "Grow at your own pace" },
+  { name: "Text size & read aloud", hash: "#/settings", h1: "Text size and read aloud" },
   { name: "Make a story", hash: "#/teaching/story", h1: "Make a story they can read" },
   {
     name: "Answer",
@@ -327,4 +328,54 @@ test("1-minute refresher: answer reveals a cited explanation; ratings are keyboa
   await expect(got).toBeChecked();
   await expectNoSeriousViolations(page);
   await expectTargets(page);
+});
+
+test("Settings: large text and high contrast apply everywhere and stay accessible", async ({
+  page,
+}) => {
+  await fast(page);
+  await page.goto("/#/settings");
+  await page.getByLabel("Extra large").check();
+  await page.getByLabel("High contrast").check();
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe(
+    "24px",
+  );
+  await expect(page.locator("html")).toHaveAttribute("data-contrast", "high");
+  await expectNoSeriousViolations(page);
+  await page.goto("/#/");
+  await expect(page.locator("html")).toHaveAttribute("data-text-size", "xl");
+  await expectNoSeriousViolations(page);
+  await page.goto("/#/settings");
+  await page.getByLabel("Español").check();
+  await expect(page.getByText(/Spanish is coming later/)).toBeVisible();
+});
+
+test("Settings: switches are real, labelled and keyboard operable", async ({ page }) => {
+  await fast(page);
+  await page.goto("/#/settings");
+  const sw = page.getByRole("switch", { name: "Less moving and animation" });
+  await sw.focus();
+  await page.keyboard.press("Space");
+  await expect(sw).toBeChecked();
+  await expect(page.locator("html")).toHaveAttribute("data-motion", "reduce");
+  await expectTargets(page);
+});
+
+test("Class board: projector view has 64px targets, steps through words, and a footer", async ({
+  page,
+}) => {
+  await fast(page);
+  await page.goto(
+    "/#/board?mode=words&title=Robot%20Talk&group=Group%20B&skill=putting%20sounds%20together&words=sat,pin,fan",
+  );
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Robot Talk");
+  await expect(page.getByRole("status").filter({ hasText: "Word 1 of 3" })).toBeVisible();
+  await expect(page.getByText("sat", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Show the word" }).click();
+  await expect(page.getByText("sat", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: /Next word/ }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Word 2 of 3" })).toBeVisible();
+  await expectFooter(page);
+  await expectNoSeriousViolations(page);
+  await expectTargets(page, 64);
 });

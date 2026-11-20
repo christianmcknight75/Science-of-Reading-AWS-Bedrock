@@ -6,7 +6,7 @@ type Variant = "primary" | "secondary" | "quiet";
 type Size = "normal" | "classroom";
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-lg font-semibold text-center leading-tight transition-colors disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex items-center justify-center gap-2 rounded-lg font-semibold text-center leading-tight disabled:cursor-not-allowed disabled:opacity-60";
 const sizes: Record<Size, string> = {
   normal: "min-h-target min-w-target px-5 py-2",
   classroom: "min-h-classroom min-w-classroom px-7 py-3 text-xl",
