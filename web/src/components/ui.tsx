@@ -12,7 +12,7 @@ const sizes: Record<Size, string> = {
   classroom: "min-h-classroom min-w-classroom px-7 py-3 text-xl",
 };
 const variants: Record<Variant, string> = {
-  primary: "bg-primary text-white hover:bg-primary-hover",
+  primary: "bg-primary text-white shadow-sm hover:bg-primary-hover",
   secondary: "border border-control bg-surface text-ink hover:bg-bg",
   quiet: "text-primary underline hover:text-primary-hover",
 };
@@ -85,20 +85,30 @@ export function ToggleChip({
   );
 }
 
+const TONES = {
+  plain: "bg-surface border-border",
+  tint: "bg-tint border-tint-2",
+  warm: "bg-warm border-warm-2",
+} as const;
+
 export function Card({
   children,
   className = "",
   as: Tag = "section",
+  tone = "plain",
+  interactive = false,
   ...rest
 }: {
   children: ReactNode;
   className?: string;
   as?: "section" | "div" | "article";
+  tone?: keyof typeof TONES;
+  interactive?: boolean;
   "aria-labelledby"?: string;
 }) {
   return (
     <Tag
-      className={`rh-card rounded-2xl border border-border bg-surface p-5 ${className}`}
+      className={`rh-card rounded-2xl border p-5 sm:p-6 ${TONES[tone]} ${interactive ? "rh-interactive" : ""} ${className}`}
       {...rest}
     >
       {children}

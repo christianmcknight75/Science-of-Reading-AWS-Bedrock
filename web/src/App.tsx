@@ -4,6 +4,7 @@ import { flags } from "./app/flags";
 import { Shell } from "./app/Shell";
 import { Link, match, PageTitle, useLocation } from "./app/router";
 import { SettingsProvider } from "./app/settings";
+import { lazy, Suspense } from "react";
 import Answer from "./screens/Answer";
 import GroupPlan from "./screens/GroupPlan";
 import Groups from "./screens/Groups";
@@ -15,6 +16,8 @@ import Stuck from "./screens/Stuck";
 import Training from "./screens/Training";
 import TrainingTopic from "./screens/TrainingTopic";
 import MakeStory from "./screens/MakeStory";
+
+const DesignSheet = import.meta.env.DEV ? lazy(() => import("./dev/DesignSheet")) : null;
 
 function NotFound() {
   return (
@@ -41,6 +44,14 @@ function FlaggedOff({ name }: { name: string }) {
 function route(path: string, query: URLSearchParams): { node: ReactNode; board?: boolean } {
   void query;
   if (path === "/") return { node: <Home /> };
+  if (DesignSheet && path === "/design")
+    return {
+      node: (
+        <Suspense fallback={null}>
+          <DesignSheet />
+        </Suspense>
+      ),
+    };
   if (path === "/teaching" || path === "/teaching/groups") return { node: <Groups /> };
   const plan = match("/teaching/groups/:id", path);
   if (plan) return { node: <GroupPlan id={plan.id} /> };

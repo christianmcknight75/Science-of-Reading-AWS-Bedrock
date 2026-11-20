@@ -18,7 +18,7 @@ function NavItem({ to, active, children }: { to: string; active: boolean; childr
     <Link
       to={to}
       aria-current={active ? "page" : undefined}
-      className={`${navLink} ${active ? "bg-primary text-white" : "text-ink hover:bg-bg"}`}
+      className={`${navLink} rounded-full ${active ? "bg-primary text-white shadow-sm" : "text-ink hover:bg-tint"}`}
     >
       {children}
     </Link>
@@ -59,11 +59,11 @@ export function Shell({ children, board = false }: { children: ReactNode; board?
         Skip to main content
       </a>
       {!board && (
-        <header className="no-print border-b border-border bg-surface">
+        <header className="no-print sticky top-0 z-30 border-b border-border bg-surface/95 shadow-card backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 sm:px-6">
             <Link
               to="/"
-              className="flex min-h-target items-center gap-2 font-heading text-lg font-semibold"
+              className="flex min-h-target items-center gap-2 font-heading text-xl font-semibold"
             >
               <Logo />
               Reading Helper
@@ -87,7 +87,7 @@ export function Shell({ children, board = false }: { children: ReactNode; board?
             <Link
               to="/settings"
               aria-current={at("/settings") ? "page" : undefined}
-              className={`${navLink} gap-2 border border-control ${at("/settings") ? "bg-primary text-white" : "bg-surface"}`}
+              className={`${navLink} gap-2 rounded-full border border-control ${at("/settings") ? "bg-primary text-white" : "bg-surface hover:bg-tint"}`}
             >
               <Icon name="sliders" />
               Text size &amp; read aloud

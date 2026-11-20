@@ -4,7 +4,8 @@ import { defineConfig, devices } from "@playwright/test";
 // tests; the teacher app runs in its built-in mock mode (VITE_API_MODE defaults to mock).
 export default defineConfig({
   testDir: "e2e",
-  use: { baseURL: "http://localhost:5174" },
+  // Reduced motion in tests: axe would otherwise sample colors mid-fade. A dedicated test turns motion on.
+  use: { baseURL: "http://localhost:5174", reducedMotion: "reduce" },
   projects: [
     { name: "desktop", use: { viewport: { width: 1280, height: 900 } } },
     {

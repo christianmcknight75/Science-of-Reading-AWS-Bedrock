@@ -59,13 +59,13 @@ export function SourcesScope({
         }}
       >
         <Dialog.Portal>
-          <Dialog.Overlay className="no-print fixed inset-0 z-40 bg-black/50" />
+          <Dialog.Overlay className="rh-overlay no-print fixed inset-0 z-40 bg-black/50" />
           <Dialog.Content
             onCloseAutoFocus={(e) => {
               e.preventDefault(); // we opened from buttons, not a Dialog.Trigger
               returnTo.current?.focus();
             }}
-            className="no-print fixed inset-y-0 right-0 z-50 flex w-full max-w-xl flex-col overflow-y-auto border-l border-border bg-surface p-5 shadow-xl"
+            className="rh-panel no-print fixed inset-y-0 right-0 z-50 flex w-full max-w-xl flex-col overflow-y-auto border-l border-border bg-surface p-5 shadow-float"
           >
             <div className="mb-3 flex items-start justify-between gap-3">
               <Dialog.Title className="font-heading text-2xl font-semibold">Sources</Dialog.Title>

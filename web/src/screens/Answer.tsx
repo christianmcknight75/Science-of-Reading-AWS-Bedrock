@@ -4,6 +4,7 @@ import { Link, navigate, PageTitle, useLocation } from "../app/router";
 import { AskForm } from "../components/AskForm";
 import { EvidenceLabel } from "../components/EvidenceLabel";
 import { Icon } from "../components/Icon";
+import { Mascot } from "../components/Mascot";
 import { ReadAloud } from "../components/ReadAloud";
 import { Citations, SourceList, SourcesScope } from "../components/Sources";
 import { Badge, Breadcrumb, Button, Card, ErrorMessage, ExampleChip } from "../components/ui";
@@ -14,21 +15,13 @@ export function LoadingState() {
   return (
     <div
       role="status"
-      className="rh-card rounded-2xl border border-border bg-surface p-8 text-center"
+      className="rh-card flex flex-col items-center gap-3 rounded-2xl border border-warm-2 bg-warm p-8 text-center"
     >
+      <Mascot state="thinking" size={120} />
       <p className="font-heading text-xl font-semibold">Looking through the approved research</p>
-      <p className="mt-2 text-muted">
+      <p className="max-w-xl text-muted">
         We check every sentence against a source before we show it. This usually takes a few
         seconds.
-      </p>
-      <p aria-hidden="true" className="mt-5 flex justify-center gap-3">
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="rh-pulse h-3 w-3 rounded-full bg-primary"
-            style={{ animationDelay: `${i * 0.25}s` }}
-          />
-        ))}
       </p>
     </div>
   );
@@ -50,7 +43,8 @@ const IDEAS = [
 export function NoResearch({ a }: { a: AskResult }) {
   const meta = NON_ANSWER[a.kind] ?? NON_ANSWER.no_research;
   return (
-    <Card aria-labelledby="no-research" className="max-w-3xl">
+    <Card aria-labelledby="no-research" tone="warm" className="max-w-3xl">
+      <Mascot state="nothing" size={110} className="float-right ml-4" />
       <div className="flex flex-wrap items-center gap-3">
         <Badge tone="plain">{a.evidence_label}</Badge>
         {a.example && <ExampleChip />}
@@ -149,7 +143,7 @@ function AnswerBody({ a }: { a: AskResult }) {
       </div>
       <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="flex flex-col gap-5">
-          <Card aria-labelledby="research-says" className="border-2 border-primary">
+          <Card aria-labelledby="research-says" tone="tint" className="border-2 border-primary">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <h2 id="research-says" className="m-0">
                 <Badge>Research says</Badge>
@@ -181,7 +175,7 @@ function AnswerBody({ a }: { a: AskResult }) {
           </Card>
 
           {a.idea_for_class.length > 0 && (
-            <Card aria-labelledby="idea" className="border-2 border-idea">
+            <Card aria-labelledby="idea" tone="warm" className="border-2 border-idea">
               <div className="flex flex-wrap items-center gap-3">
                 <h2 id="idea" className="m-0">
                   <Badge tone="idea">Idea for your class</Badge>

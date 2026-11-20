@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Icon } from "../components/Icon";
 import { AskForm } from "../components/AskForm";
+import { Mascot } from "../components/Mascot";
 import { Card, LinkButton } from "../components/ui";
 import { flags } from "../app/flags";
 import { Link, PageTitle } from "../app/router";
@@ -26,10 +27,12 @@ function Area({
   return (
     <Card
       aria-labelledby={id}
+      interactive
+      tone={primary ? "tint" : "plain"}
       className={`flex flex-col gap-4 ${primary ? "border-2 border-primary" : ""}`}
     >
-      <span className="text-primary">
-        <Icon name={icon} className="h-9 w-9" />
+      <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white shadow-sm">
+        <Icon name={icon} className="h-8 w-8" />
       </span>
       <h2 id={id} className="font-heading text-2xl font-semibold">
         {title}
@@ -40,7 +43,7 @@ function Area({
           <li key={l.label}>
             <Link
               to={l.to}
-              className="flex min-h-target items-center justify-between gap-2 rounded-lg bg-bg px-3 py-2 font-medium hover:bg-border"
+              className="flex min-h-target flex-wrap items-center justify-between gap-x-2 rounded-xl border border-transparent bg-surface px-4 py-2 font-medium shadow-sm hover:border-primary"
             >
               <span>{l.label}</span>
               {l.note}
@@ -55,13 +58,33 @@ function Area({
   );
 }
 
+function greeting() {
+  const h = new Date().getHours();
+  return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+}
+
 export default function Home() {
   const [groups] = useGroups();
 
   return (
     <>
-      <PageTitle title="Home">What do you want to work on?</PageTitle>
-      <p className="mt-2 text-lg text-muted">Pick one. You can switch any time from the top bar.</p>
+      <Card tone="warm" aria-labelledby="greeting" className="rh-rise !p-6 sm:!p-8">
+        <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+          <Mascot size={132} className="shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="eyebrow">{greeting()}</p>
+            <div id="greeting">
+              <PageTitle title="Home">What do you want to work on?</PageTitle>
+            </div>
+            <p className="mt-2 text-lg text-muted">
+              Pick one below, or ask a question. You can switch any time from the top bar.
+            </p>
+          </div>
+        </div>
+        <div className="mt-6">
+          <AskForm />
+        </div>
+      </Card>
 
       <div className={`mt-6 grid gap-5 ${flags.behavior ? "lg:grid-cols-3" : "md:grid-cols-2"}`}>
         <Area
@@ -97,10 +120,6 @@ export default function Home() {
           ]}
           open={{ label: "Open Training", to: "/training" }}
         />
-      </div>
-
-      <div className="mt-6">
-        <AskForm />
       </div>
     </>
   );

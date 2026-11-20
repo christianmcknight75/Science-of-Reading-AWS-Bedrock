@@ -14,6 +14,18 @@
   --color-notice-text: #4a3700;
   --font-heading: "Lexend", system-ui, sans-serif;
   --font-body: "Atkinson Hyperlegible", system-ui, sans-serif;
+  /* v2: warm surfaces, tinted panels, depth, motion (see docs/DESIGN_DIRECTION.md) */
+  --color-warm: #fbf5e8;
+  --color-warm-2: #f5e7c8;
+  --color-tint: #eaf0f9;
+  --color-tint-2: #d3e0f2;
+  --shadow-card: 0 1px 2px rgb(21 35 58 / 0.06), 0 4px 12px rgb(21 35 58 / 0.05);
+  --shadow-lift: 0 2px 4px rgb(21 35 58 / 0.08), 0 10px 24px rgb(21 35 58 / 0.1);
+  --shadow-float: 0 12px 40px rgb(21 35 58 / 0.25);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
   --text-base: 17px;
   --line-height: 1.5;
   --target-min: 48px;

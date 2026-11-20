@@ -97,3 +97,156 @@ html[data-motion="reduce"] * {
 .grid > * {
   min-width: 0;
 }
+
+/* ---- v2: type scale, page background, depth ------------------------------------------- */
+body {
+  margin: 0;
+  background:
+    linear-gradient(180deg, #eaf0f9 0, var(--color-bg) 360px) no-repeat,
+    var(--color-bg);
+  line-height: 1.55;
+}
+html[data-contrast="high"] body {
+  background: #fff;
+}
+h1 {
+  letter-spacing: -0.01em;
+}
+.eyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.rh-card {
+  box-shadow: var(--shadow-card);
+}
+html[data-contrast="high"] .rh-card,
+html[data-contrast="high"] header,
+html[data-contrast="high"] footer {
+  box-shadow: none;
+}
+.rh-interactive {
+  transition:
+    transform var(--dur-base) var(--ease),
+    box-shadow var(--dur-base) var(--ease);
+}
+.rh-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+button:not(:disabled):active,
+a.rh-press:active {
+  transform: scale(0.98);
+}
+
+/* ---- v2: motion (decoration only; switched off by reduced-motion, see rule above) --------- */
+@keyframes rh-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+main .rh-card,
+.rh-rise {
+  animation: rh-rise var(--dur-slow) var(--ease) both;
+}
+main .rh-card:nth-child(2),
+.rh-rise:nth-child(2) {
+  animation-delay: 40ms;
+}
+main .rh-card:nth-child(3),
+.rh-rise:nth-child(3) {
+  animation-delay: 80ms;
+}
+main .rh-card:nth-child(4),
+.rh-rise:nth-child(4) {
+  animation-delay: 120ms;
+}
+main .rh-card:nth-child(n + 5) {
+  animation-delay: 160ms;
+}
+@keyframes rh-slide-in {
+  from {
+    transform: translateX(32px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes rh-slide-out {
+  to {
+    transform: translateX(32px);
+    opacity: 0;
+  }
+}
+@keyframes rh-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes rh-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+.rh-panel[data-state="open"] {
+  animation: rh-slide-in var(--dur-slow) var(--ease) both;
+}
+.rh-panel[data-state="closed"] {
+  animation: rh-slide-out var(--dur-base) var(--ease) both;
+}
+.rh-overlay[data-state="open"] {
+  animation: rh-fade-in var(--dur-slow) var(--ease) both;
+}
+.rh-overlay[data-state="closed"] {
+  animation: rh-fade-out var(--dur-base) var(--ease) both;
+}
+
+/* Mascot micro-animations */
+@keyframes wren-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+@keyframes wren-blink {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes wren-dot {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.wren-bob {
+  animation: wren-bob 4s ease-in-out infinite;
+}
+.wren-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: wren-blink 5s infinite;
+}
+.wren-dot {
+  animation: wren-dot 1.4s ease-in-out infinite;
+}

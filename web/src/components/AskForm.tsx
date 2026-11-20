@@ -22,7 +22,7 @@ export function AskForm({
         onSubmit={submit}
         role="search"
         aria-label="Ask a question"
-        className="rh-card flex flex-col gap-3 rounded-2xl border border-border bg-surface p-3 sm:flex-row sm:items-center"
+        className="flex flex-col gap-3 rounded-2xl border border-warm-2 bg-surface p-3 shadow-card sm:flex-row sm:items-center"
       >
         <label htmlFor={id} className="px-2 font-bold">
           {label}
