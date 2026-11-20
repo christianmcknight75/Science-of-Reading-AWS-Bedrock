@@ -16,6 +16,7 @@ export interface Source {
   curation_status: string | null;
   curation_note: string | null;
   reviewer_notes: string | null;
+  attribution: string | null;
 }
 
 export interface Checklist {

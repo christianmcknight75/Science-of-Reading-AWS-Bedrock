@@ -13,10 +13,19 @@ const base = {
   curation_status: "ready",
   curation_note: "team intends to include; awaiting Aidan's license sign-off.",
   reviewer_notes: null,
+  attribution: null,
 };
 const sources = {
   candidate: [
-    { ...base, source_id: "src_0001", title: "Candidate paper", year: 2020, status: "candidate" },
+    {
+      ...base,
+      source_id: "src_0001",
+      title: "Candidate paper",
+      year: 2020,
+      status: "candidate",
+      attribution: "\u201cCandidate paper\u201d by Test Publisher (2020).",
+      reviewer_notes: "Checked against the PDF; figures on p.4 are third-party.",
+    },
   ],
   approved: [
     { ...base, source_id: "src_0002", title: "Approved paper", year: 2019, status: "approved" },
@@ -158,4 +167,18 @@ test("every button and field is at least 48px, and keyboard focus is visible", a
     .getByRole("button", { name: "Approve source" })
     .evaluate((el) => getComputedStyle(el).outlineWidth);
   expect(parseFloat(outline)).toBeGreaterThanOrEqual(2);
+});
+
+test("review form keeps the attribution and notes that were pre-filled from the curated list", async ({
+  page,
+}) => {
+  await mockApi(page);
+  await page.goto("/#/admin");
+  await page.getByRole("button", { name: /Candidate paper/ }).click();
+  await expect(page.getByLabel(/Attribution/)).toHaveValue(
+    "\u201cCandidate paper\u201d by Test Publisher (2020).",
+  );
+  await expect(page.getByLabel("Reviewer notes")).toHaveValue(
+    "Checked against the PDF; figures on p.4 are third-party.",
+  );
 });

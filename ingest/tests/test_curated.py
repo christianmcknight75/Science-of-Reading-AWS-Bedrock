@@ -98,3 +98,34 @@ def test_rerun_updates_details_but_never_status(
     assert rows(conn, "t_gov")[3] == "https://x.gov/uk"  # missing link filled in
     held = rows(conn, "t_hold")
     assert held[0] == "rejected" and held[5] == "quote_only"
+
+
+def test_prefills_attribution_and_notes_without_overwriting(
+    conn: psycopg.Connection[Any], tmp_path: Path
+) -> None:
+    f = tmp_path / "c.yaml"
+    f.write_text(
+        """
+sources:
+  - {id: t_a, title: "Guide A", publisher: "Pub", year: 2020, url: "https://x.gov/a",
+     license: "CC BY 4.0", status: ready, review_note: "check figures", source_type: practice_guide}
+  - {id: t_b, title: "Guide B", status: ready, attribution: "Custom credit line."}
+"""
+    )
+    load_curated(conn, f)
+
+    def get(cid: str) -> tuple[Any, ...]:
+        r = conn.execute(
+            "SELECT attribution, reviewer_notes FROM sources WHERE curated_id=%s", (cid,)
+        ).fetchone()
+        assert r is not None
+        return tuple(r)
+
+    a = get("t_a")
+    assert a[0] == "\u201cGuide A\u201d by Pub (2020). Source: https://x.gov/a. Licence: CC BY 4.0."
+    assert a[1] == "check figures"
+    assert get("t_b")[0] == "Custom credit line."
+    # a reviewer edits; a re-run must not overwrite it
+    conn.execute("UPDATE sources SET attribution='Edited by hand' WHERE curated_id='t_a'")
+    load_curated(conn, f)
+    assert get("t_a")[0] == "Edited by hand"

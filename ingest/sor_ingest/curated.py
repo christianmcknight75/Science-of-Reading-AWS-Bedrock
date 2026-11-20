@@ -53,6 +53,36 @@ def _note(entry: dict[str, Any]) -> str | None:
     return " ".join(parts) or None
 
 
+def default_attribution(entry: dict[str, Any]) -> str:
+    """Attribution text pre-filled in the review form. A curated 'attribution' wins; otherwise it is
+    built from the entry (title, publisher, year, link, licence) for the reviewer to check."""
+    if entry.get("attribution"):
+        return str(entry["attribution"]).strip()
+    parts = [f"\u201c{html.unescape(entry['title'])}\u201d"]
+    if entry.get("publisher"):
+        parts.append(f"by {entry['publisher']}")
+    if entry.get("year"):
+        parts.append(f"({entry['year']})")
+    text = " ".join(parts) + "."
+    url = str(entry.get("url") or "")
+    if url.startswith("http"):
+        text += f" Source: {url}."
+    if entry.get("license"):
+        text += f" Licence: {entry['license']}."
+    return text
+
+
+def _prefill(conn: psycopg.Connection[Any], entry: dict[str, Any]) -> None:
+    """Fill the review form's attribution and reviewer notes for a source still waiting for review.
+    Never overwrites text a person already wrote; never touches decided sources."""
+    conn.execute(
+        """UPDATE sources SET attribution = COALESCE(NULLIF(attribution, ''), %s),
+             reviewer_notes = COALESCE(NULLIF(reviewer_notes, ''), %s)
+           WHERE curated_id = %s AND status = 'candidate'""",
+        (default_attribution(entry), entry.get("review_note") or None, entry["id"]),
+    )
+
+
 def _norm(title: str) -> str:
     t = re.sub(r"\(.*?\)", " ", html.unescape(title).lower())
     return " ".join(re.sub(r"[^a-z0-9]+", " ", t).split())
@@ -103,6 +133,7 @@ def load_curated(conn: psycopg.Connection[Any], path: Path = CURATED_FILE) -> di
                      doi=COALESCE(doi, %s) WHERE curated_id=%s""",
                 (*meta[1:], url, pdf_url, doi, e["id"]),
             )
+            _prefill(conn, e)
             report["already_loaded"].append(e["id"])
             continue
         found = _find_existing(conn, title, url, doi)
@@ -131,6 +162,7 @@ def load_curated(conn: psycopg.Connection[Any], path: Path = CURATED_FILE) -> di
                 report["conflicts"].append(
                     f"{sid} is {status} but curated list says {cur} ({e['id']})"
                 )
+            _prefill(conn, e)
             report["attached"].append(f"{e['id']} -> {sid} ({status})")
             continue
         row = conn.execute(
@@ -153,5 +185,6 @@ def load_curated(conn: psycopg.Connection[Any], path: Path = CURATED_FILE) -> di
                 HOLD_TEXT.get(cur), e.get("license"), e.get("source_type", "study"),
             ),
         )  # fmt: skip
+        _prefill(conn, e)
         report["on_hold" if held else "added"].append(f"{e['id']} -> {sid}")
     return report
