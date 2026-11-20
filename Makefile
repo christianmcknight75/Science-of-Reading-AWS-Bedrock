@@ -5,7 +5,7 @@ dev:
 
 test:
 	cd api && uv run pytest
-	cd ingest/source_search && python3 -m pytest tests -q
+	cd ingest/source_search && uv run --no-project --with pytest pytest tests -q
 	cd web && npm test --if-present
 
 eval:
