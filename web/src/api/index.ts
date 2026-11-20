@@ -19,6 +19,7 @@ export const diagnoseMistakes = impl.diagnoseMistakes;
 export const listTrainingTopics = impl.listTrainingTopics;
 export const getTrainingPlan = impl.getTrainingPlan;
 export const getRefresher = impl.getRefresher;
+export const checkDecodable = impl.checkDecodable;
 export const sendFeedback = impl.sendFeedback;
 
 export const signIn = auth.signIn;

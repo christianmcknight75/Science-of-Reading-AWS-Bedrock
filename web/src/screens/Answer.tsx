@@ -77,12 +77,12 @@ export function NoResearch({ a }: { a: AskResult }) {
   );
 }
 
-function Feedback() {
+function Feedback({ queryId }: { queryId: number | null }) {
   const [rating, setRating] = useState<string | null>(null);
   async function pick(r: "worked" | "so-so" | "stuck") {
     setRating(r);
     try {
-      await sendFeedback({ rating: r });
+      await sendFeedback({ rating: r, query_id: queryId });
     } catch {
       /* feedback is optional; never block the teacher */
     }
@@ -217,7 +217,7 @@ function AnswerBody({ a }: { a: AskResult }) {
               </div>
             </Card>
           )}
-          <Feedback />
+          <Feedback queryId={a.query_id} />
         </div>
 
         <div className="flex flex-col gap-5">

@@ -86,6 +86,20 @@ async function expectNoSeriousViolations(page: Page) {
   ).toEqual([]);
 }
 
+test("every admin call carries the bearer token", async ({ page }) => {
+  const seen: (string | undefined)[] = [];
+  page.on("request", (r) => {
+    if (r.url().includes("/admin/sources")) seen.push(r.headers()["authorization"]);
+  });
+  await mockApi(page);
+  await page.goto("/#/admin");
+  await expect(page.getByRole("button", { name: /Candidate paper/ })).toBeVisible();
+  await page.getByRole("button", { name: /Candidate paper/ }).click();
+  await expect(page.getByRole("button", { name: "Approve source" })).toBeVisible();
+  expect(seen.length).toBeGreaterThan(0);
+  expect(seen.every((h) => h === "Bearer mock.2")).toBe(true);
+});
+
 test("waiting-for-review list and review form have no serious accessibility problems", async ({
   page,
 }) => {

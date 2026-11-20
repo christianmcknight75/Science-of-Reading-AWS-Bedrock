@@ -9,6 +9,7 @@ import { Badge, Button, Card, ErrorMessage, ExampleChip, ToggleChip } from "../c
 import { ALL_SOUNDS } from "../lib/decode";
 import { useTaughtSounds } from "../lib/groups";
 import { useAsync } from "../lib/useAsync";
+import { useWordChecks } from "../lib/useWordChecks";
 
 export default function MakeStory() {
   const [taught, setTaught] = useTaughtSounds();
@@ -20,7 +21,12 @@ export default function MakeStory() {
     `story${n}`,
   );
 
-  const { tricky, unknown } = checkStory(data?.words ?? [], known);
+  // The server's marks come with the story. When the teacher turns a sound on or off, the server
+  // checks every word again (plain code, no model); the story itself is not rewritten.
+  const recheck = useWordChecks(data?.words ?? [], taught);
+  const checks = recheck.checks ?? data?.checks ?? null;
+  const { tricky, unknown } = checkStory(data?.words ?? [], known, checks);
+  const checking = recheck.loading;
 
   const toggle = (g: string) =>
     setTaught(known.has(g) ? taught.filter((x) => x !== g) : [...taught, g]);
@@ -65,7 +71,7 @@ export default function MakeStory() {
               type="text"
               value={about}
               onChange={(e) => setAbout(e.target.value)}
-              maxLength={80}
+              maxLength={60}
               placeholder="a pet fish"
               className="mt-1 min-h-target w-full rounded-lg border border-control bg-surface px-3"
             />
@@ -94,7 +100,9 @@ export default function MakeStory() {
               </h2>
               <div className="flex flex-wrap items-center gap-2">
                 {data.example && <ExampleChip />}
-                {unknown === 0 ? (
+                {checking ? (
+                  <Badge tone="plain">Checking every word…</Badge>
+                ) : unknown === 0 ? (
                   <Badge tone="plain">
                     <Icon name="check" className="mr-1 inline h-4 w-4" />
                     Every word checked
@@ -108,23 +116,31 @@ export default function MakeStory() {
               </div>
             </div>
             <div className="mt-4">
-              <StoryText words={data.words} known={known} />
+              <StoryText words={data.words} known={known} checks={checks} />
             </div>
             <div className="mt-3">
               <MarksLegend />
             </div>
             <p role="status" className="mt-3">
-              {unknown > 0
-                ? "This story uses a sound your kids don't know yet, so it can't be printed or added to a plan. Make a new story to get one that fits."
-                : tricky.length > 0
-                  ? `Checked: every other word uses sounds they know. ${tricky.length} tricky ${tricky.length === 1 ? "word" : "words"} to teach first: ${tricky.join(", ")}.`
-                  : "Checked: every word uses sounds they know."}
+              {checking
+                ? "Checking every word against your sounds…"
+                : unknown > 0
+                  ? "This story uses a sound your kids don't know yet, so it can't be printed or added to a plan. Make a new story to get one that fits."
+                  : tricky.length > 0
+                    ? `Checked: every other word uses sounds they know. ${tricky.length} tricky ${tricky.length === 1 ? "word" : "words"} to teach first: ${tricky.join(", ")}.`
+                    : "Checked: every word uses sounds they know."}
             </p>
             <div className="no-print mt-4 flex flex-wrap items-end gap-2">
-              <Button icon="print" disabled={unknown > 0} onClick={() => window.print()}>
+              <Button
+                icon="print"
+                disabled={unknown > 0 || checking}
+                onClick={() => window.print()}
+              >
                 Print this story
               </Button>
-              {unknown === 0 && <AddToGroup title={data.title} steps={[data.words.join(" ")]} />}
+              {unknown === 0 && !checking && (
+                <AddToGroup title={data.title} steps={[data.words.join(" ")]} />
+              )}
             </div>
           </Card>
         )}

@@ -6,11 +6,12 @@
 //    National Reading Panel, UK reading framework). Nothing is cited from a held-back source.
 //  - Passage text below is SAMPLE text written for the demo. It is NOT a real quotation, and the
 //    Sources panel says so for examples. Real passages come from the API.
-import { classifyPair, plural, unknownSounds } from "../lib/decode";
+import { checkWord, classifyPair, graphemes, plural, unknownSounds } from "../lib/decode";
 import {
   ApiError,
   type AskRequest,
   type AskResult,
+  type DecodableCheckRequest,
   type Feedback,
   type GroupPlan,
   type MistakePair,
@@ -23,6 +24,7 @@ import {
   type StoryRequest,
   type TrainingPlan,
   type TrainingTopic,
+  type WordCheck,
 } from "./types";
 
 export const MOCK_DISCLAIMER =
@@ -30,6 +32,12 @@ export const MOCK_DISCLAIMER =
 export const MOCK_OFFER =
   "I can help with research on phonemic awareness, phonics and decoding, fluency, vocabulary, comprehension, and supporting struggling readers in kindergarten through 3rd grade.";
 export const MOCK_CONTENT_DATE = "2026-11-20";
+/** Fields every real feature response carries (docs/API_CONTRACT.md). Mock ids are fake. */
+const META = {
+  disclaimer: MOCK_DISCLAIMER,
+  content_last_updated: MOCK_CONTENT_DATE,
+  query_id: 1001,
+} as const;
 
 declare global {
   interface Window {
@@ -129,6 +137,7 @@ const base = {
   offer: "",
   disclaimer: MOCK_DISCLAIMER,
   content_last_updated: MOCK_CONTENT_DATE,
+  query_id: 1001,
   example: true,
 };
 
@@ -473,10 +482,12 @@ export async function getGroupPlan(focus: Skill, sounds: string[]): Promise<Grou
   const p = PLANS[focus];
   const steps = p.steps(sounds);
   return {
+    ...META,
     example: true,
     minutes: steps.reduce((a, s) => a + s.minutes, 0),
     why: p.why,
     evidence_label: "Very sure",
+    mixed: false,
     research_says: [
       { text: "Review sounds daily and teach one step at a time.", citations: [1] },
       {
@@ -509,6 +520,45 @@ const LIBRARY: { title: string; text: string }[] = [
   },
 ];
 
+/** Mock stand-in for the server's word check (the real one is plain code on the server). */
+function mockChecks(words: string[], known: Set<string>): WordCheck[] {
+  return words.map((w) => {
+    const status = checkWord(w, known);
+    const bare = w.replace(/[^A-Za-z]/g, "");
+    if (status === "tricky")
+      return {
+        word: bare,
+        status: "heart_word" as const,
+        decodable: false,
+        reason: "Heart word: teach it first.",
+        graphemes: [],
+        needs: [],
+      };
+    if (status === "unknown")
+      return {
+        word: bare,
+        status: "not_decodable" as const,
+        decodable: false,
+        reason: "Needs a sound you have not taught yet.",
+        graphemes: [],
+        needs: unknownSounds(bare, known),
+      };
+    return {
+      word: bare,
+      status: "decodable" as const,
+      decodable: true,
+      reason: "Sounds out with taught sounds.",
+      graphemes: graphemes(bare),
+      needs: [],
+    };
+  });
+}
+
+export async function checkDecodable(req: DecodableCheckRequest): Promise<WordCheck[]> {
+  await sleep(150);
+  return mockChecks(req.words, new Set(req.sounds));
+}
+
 export async function makeStory(req: StoryRequest): Promise<Story> {
   await delay();
   const known = new Set(req.sounds);
@@ -526,10 +576,26 @@ export async function makeStory(req: StoryRequest): Promise<Story> {
     missing(LIBRARY[b].text) < missing(LIBRARY[a].text) ? b : a,
   );
   const s = LIBRARY[best];
+  const words = s.text.split(" ");
+  const checks = mockChecks(words, known);
   return {
+    ...META,
     example: true,
     title: s.title,
-    words: s.text.split(" "),
+    words,
+    checks,
+    all_decodable: checks.every((c) => c.status === "decodable" || c.status === "heart_word"),
+    flagged: checks
+      .filter((c) => c.status === "not_decodable" || c.status === "unknown")
+      .map((c) => c.word),
+    evidence_label: "Fairly sure",
+    mixed: false,
+    research_says: [
+      {
+        text: "Decodable text lets beginning readers practice the sounds they have been taught.",
+        citations: [1],
+      },
+    ],
     sources: sources("uk", "wwcR4"),
   };
 }
@@ -580,11 +646,20 @@ const PATTERNS = {
 
 export async function diagnoseMistakes(pairs: MistakePair[]): Promise<MistakeResult> {
   await delay();
+  // The server refuses anything that is not a plain word (names especially): a 422 with a sentence.
+  const looksLikeName = (t: string) => /^[A-Z][a-z]+$/.test(t.trim());
+  if (
+    pairs.some((p) =>
+      [p.word, p.said].some((t) => !/^[A-Za-z']{1,20}$/.test(t.trim()) || looksLikeName(t)),
+    )
+  )
+    throw new ApiError("Please enter only the word and what the child said. No names.", 422);
   const found = pairs
     .map((p) => classifyPair(p.word, p.said))
     .filter((x): x is keyof typeof PATTERNS => !!x);
   if (found.length === 0)
     return {
+      ...META,
       example: true,
       kind: "no_match",
       pattern: "",
@@ -593,6 +668,7 @@ export async function diagnoseMistakes(pairs: MistakePair[]): Promise<MistakeRes
       also_watch: "",
       evidence_label: "No research found",
       evidence_note: "",
+      research_says: [],
       sources: [],
       message:
         "I can't tell which skill is behind this one yet. Try adding another mistake, or check the word and what the child said.",
@@ -605,6 +681,7 @@ export async function diagnoseMistakes(pairs: MistakePair[]): Promise<MistakeRes
   const n = tally[top];
   const p = PATTERNS[top];
   return {
+    ...META,
     example: true,
     kind: "match",
     pattern: p.pattern,
@@ -616,6 +693,12 @@ export async function diagnoseMistakes(pairs: MistakePair[]): Promise<MistakeRes
       n >= 3
         ? `${n} mistakes point to the same skill.`
         : `Based on ${plural(n, "mistake")} so far. Add ${3 - n} more to be surer.`,
+    research_says: [
+      {
+        text: `Teaching ${p.skill.toLowerCase()} directly helps children who struggle.`,
+        citations: [1],
+      },
+    ],
     sources: sources(...p.keys),
     message: "",
   };
@@ -647,8 +730,10 @@ export const TOPICS: TrainingTopic[] = [
 ];
 
 const PLAN_BASE = {
+  ...META,
   example: true,
   evidence_label: "Very sure",
+  mixed: false,
 } as const;
 
 export async function listTrainingTopics(): Promise<TrainingTopic[]> {
@@ -790,7 +875,9 @@ export async function getTrainingPlan(topicId: string): Promise<TrainingPlan> {
 export async function getRefresher(): Promise<Refresher> {
   await delay();
   return {
+    ...META,
     example: true,
+    evidence_label: "Very sure",
     day: 4,
     statement: "Good readers guess words from pictures and the first letter.",
     is_true: false,
@@ -817,6 +904,6 @@ export async function getRefresher(): Promise<Refresher> {
 }
 
 export async function sendFeedback(fb: Feedback): Promise<void> {
-  void fb;
+  void fb; // real mode: POST /api/feedback {rating, query_id}
   await sleep(200);
 }

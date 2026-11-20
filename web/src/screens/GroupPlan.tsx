@@ -9,6 +9,7 @@ import { Badge, Breadcrumb, Button, Card, ErrorMessage, ExampleChip } from "../c
 import { SKILL_LABEL, useGroups, useTaughtSounds } from "../lib/groups";
 import { useStored } from "../lib/storage";
 import { useAsync } from "../lib/useAsync";
+import { useWordChecks } from "../lib/useWordChecks";
 
 function Step({
   n,
@@ -25,7 +26,8 @@ function Step({
   const title = swapped && step.alt ? step.alt.title : step.title;
   const body = swapped && step.alt ? step.alt.body : step.body;
   const isQuick = step.title === "Quick check";
-  const story = step.story ? checkStory(step.story, known) : null;
+  const { checks } = useWordChecks(step.story ?? [], [...known]);
+  const story = step.story ? checkStory(step.story, known, checks) : null;
   return (
     <li>
       <Card
@@ -79,6 +81,7 @@ function Step({
                 <StoryText
                   words={step.story!}
                   known={known}
+                  checks={checks}
                   className="text-2xl leading-[2.4rem]"
                 />
               </div>

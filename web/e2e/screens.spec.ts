@@ -273,6 +273,18 @@ test("Why is a kid stuck: common mistake finds the skill with a citation", async
   await expectTargets(page);
 });
 
+test("Why is a kid stuck: a name is refused with a plain sentence", async ({ page }) => {
+  await fast(page);
+  await page.goto("/#/teaching/stuck");
+  await page.getByLabel("The word").fill("Jamal");
+  await page.getByLabel("What they said").fill("jam");
+  await page.getByRole("button", { name: "Find the skill" }).click();
+  await expect(
+    page.getByText("Please enter only the word and what the child said. No names."),
+  ).toBeVisible();
+  await expectNoSeriousViolations(page);
+});
+
 test("Why is a kid stuck: unclear mistake is answered honestly", async ({ page }) => {
   await fast(page);
   await page.goto("/#/teaching/stuck");

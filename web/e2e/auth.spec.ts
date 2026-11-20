@@ -174,6 +174,8 @@ test("full invite loop: request -> admin approves -> new teacher sets a password
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.getByRole("link", { name: "Admin" }).click();
   await page.getByRole("tab", { name: "Access requests" }).click();
+  // The job role is its own field now (not squeezed into the district text).
+  await expect(page.getByText("Loop School (Reading coach or interventionist)")).toBeVisible();
   await page.getByRole("button", { name: "Approve Loop Person" }).click();
   const note = await page.getByRole("status").filter({ hasText: "Invite code:" }).textContent();
   const code = /Invite code: (\S+)\./.exec(note ?? "")?.[1];

@@ -54,6 +54,14 @@ export interface AnswerResponse {
   offer: string;
   disclaimer: string;
   content_last_updated: string | null;
+  query_id: number | null; // pass to sendFeedback
+}
+
+/** On every feature response (docs/API_CONTRACT.md "Rules every endpoint follows"). */
+export interface Meta {
+  disclaimer: string;
+  content_last_updated: string | null;
+  query_id: number | null;
 }
 
 /** Added by mock mode only. The UI shows an "Example" marker whenever this is true. */
@@ -85,10 +93,11 @@ export interface PlanStep {
   alt?: { title: string; body: string }; // what "Swap this step" shows instead
 }
 
-export interface GroupPlan extends Marked {
+export interface GroupPlan extends Marked, Meta {
   minutes: number;
   why: string;
   evidence_label: string;
+  mixed: boolean; // cited evidence disagrees; the label is then at most "Not sure yet"
   research_says: ResearchClaim[];
   steps: PlanStep[];
   sources: SourceOut[];
@@ -99,9 +108,29 @@ export interface StoryRequest {
   about?: string;
   variant?: number; // 0, 1, 2...: ask for a different story than last time
 }
-export interface Story extends Marked {
+/** The server's decodability check of one word (CMU dictionary + grapheme rules, no AI). */
+export interface WordCheck {
+  word: string;
+  status: "decodable" | "heart_word" | "not_decodable" | "unknown";
+  decodable: boolean; // true ONLY for "decodable"; a heart word is allowed but never "decodable"
+  reason: string;
+  graphemes: string[];
+  needs: string[]; // untaught graphemes a failing word needs
+}
+export interface DecodableCheckRequest {
+  sounds: string[];
+  words: string[];
+  heart_words?: string[];
+}
+export interface Story extends Marked, Meta {
   title: string;
-  words: string[]; // in reading order; the checker marks each word
+  words: string[]; // in reading order
+  checks: WordCheck[]; // same length and order as words: the server's marks
+  all_decodable: boolean;
+  flagged: string[]; // words that are not_decodable or unknown
+  evidence_label: string;
+  mixed: boolean;
+  research_says: ResearchClaim[];
   sources: SourceOut[];
 }
 
@@ -109,7 +138,7 @@ export interface MistakePair {
   word: string;
   said: string;
 }
-export interface MistakeResult extends Marked {
+export interface MistakeResult extends Marked, Meta {
   kind: "match" | "no_match";
   pattern: string;
   skill: string;
@@ -117,6 +146,7 @@ export interface MistakeResult extends Marked {
   also_watch: string;
   evidence_label: string;
   evidence_note: string;
+  research_says: ResearchClaim[]; // the cited basis (empty for no_match)
   sources: SourceOut[];
   message: string;
 }
@@ -128,10 +158,11 @@ export interface TrainingTopic {
   training_word: string;
   fits: string;
 }
-export interface TrainingPlan extends Marked {
+export interface TrainingPlan extends Marked, Meta {
   topic: TrainingTopic;
   remember: { sentence: string; sounds: { letter: string; hint: string }[]; tip: string };
   evidence_label: string;
+  mixed: boolean;
   research_says: ResearchClaim[];
   idea: { title: string; minutes: number; steps: string[]; need: string };
   short_idea: { title: string; minutes: number; steps: string[]; need: string };
@@ -141,7 +172,7 @@ export interface TrainingPlan extends Marked {
   sources: SourceOut[];
 }
 
-export interface Refresher extends Marked {
+export interface Refresher extends Marked, Meta {
   day: number;
   statement: string;
   is_true: boolean;
@@ -149,11 +180,13 @@ export interface Refresher extends Marked {
   citations: number[];
   sources: SourceOut[];
   skills: string[];
+  evidence_label: string;
   picked: { minutes: number; kind: string; title: string; you_get: string }[];
 }
 
 export interface Feedback {
   rating: "worked" | "so-so" | "stuck";
+  query_id?: number | null; // from the answer being rated; sent only when known
 }
 
 export class ApiError extends Error {
@@ -188,6 +221,7 @@ export interface RequestAccessBody {
   name: string;
   email: string;
   district: string; // district or school
+  job_role?: string; // "Reading coach" etc. Information for the reviewing admin, not a permission
 }
 export type RequestStatus = "pending" | "approved" | "denied";
 export interface AccessRequest {
@@ -195,6 +229,7 @@ export interface AccessRequest {
   name: string;
   email: string;
   district: string;
+  job_role: string | null;
   status: RequestStatus;
   requested_at: string;
   decided_by: string | null;

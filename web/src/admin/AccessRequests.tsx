@@ -116,7 +116,10 @@ export default function AccessRequests() {
                     {r.name}
                   </h3>
                   <p>{r.email}</p>
-                  <p className="text-muted">{r.district}</p>
+                  <p className="text-muted">
+                    {r.district}
+                    {r.job_role ? ` (${r.job_role})` : ""}
+                  </p>
                   <p className="text-sm text-muted">
                     Requested {when(r.requested_at)}
                     {r.decided_at ? ` · decided ${when(r.decided_at)}` : ""}

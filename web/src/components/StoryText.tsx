@@ -1,3 +1,4 @@
+import type { WordCheck } from "../api";
 import { checkWord, type WordStatus } from "../lib/decode";
 
 // Word marks use shape as well as color: solid underline = can sound out, dotted = tricky word,
@@ -13,8 +14,20 @@ const SR: Record<WordStatus, string> = {
   unknown: " (uses a sound they don't know yet)",
 };
 
-export function checkStory(words: string[], known: Set<string>) {
-  const checked = words.map((w) => ({ w, status: checkWord(w, known) }));
+/** Server status -> mark. A heart word is allowed but never shown as "can sound out". */
+const fromServer = (c: WordCheck): WordStatus =>
+  c.status === "decodable" ? "ok" : c.status === "heart_word" ? "tricky" : "unknown";
+
+/**
+ * Marks for each word. With the server's `checks` (same length and order as `words`) the marks are
+ * the server's. Without them (nothing checked yet) the small client helper is only a fallback.
+ */
+export function checkStory(words: string[], known: Set<string>, checks?: WordCheck[] | null) {
+  const server = checks && checks.length === words.length ? checks : null;
+  const checked = words.map((w, i) => ({
+    w,
+    status: server ? fromServer(server[i]) : checkWord(w, known),
+  }));
   const tricky = [
     ...new Set(
       checked
@@ -28,13 +41,15 @@ export function checkStory(words: string[], known: Set<string>) {
 export function StoryText({
   words,
   known,
+  checks,
   className = "text-3xl leading-[2.6rem]",
 }: {
   words: string[];
   known: Set<string>;
+  checks?: WordCheck[] | null;
   className?: string;
 }) {
-  const { checked } = checkStory(words, known);
+  const { checked } = checkStory(words, known, checks);
   return (
     <p className={`font-body ${className}`} data-testid="story">
       {checked.map(({ w, status }, i) => (

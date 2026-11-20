@@ -1,5 +1,4 @@
 // Real API client. One function per backend call, typed with ./types.
-// Only /api/ask exists on the server today; the others are the proposed Phase 4 contract.
 import { clearToken, getToken, setToken } from "./session";
 import {
   ApiError,
@@ -12,7 +11,9 @@ import {
   type SignInResult,
   type AskRequest,
   type AskResult,
+  type DecodableCheckRequest,
   type Feedback,
+  type WordCheck,
   type GroupPlan,
   type MistakePair,
   type MistakeResult,
@@ -66,7 +67,7 @@ async function request<T>(method: "GET" | "POST", path: string, body?: unknown):
 // Built: api/app/qa.py. 503 = kill switch, 429 = rate limit (message is teacher-ready).
 export const ask = (req: AskRequest) => request<AskResult>("POST", "/api/ask", req);
 
-// PROPOSED (not built yet)
+// Phase 4 (built behind the fake model client: docs/API_CONTRACT.md)
 export const getGroupPlan = (focus: Skill, sounds: string[]) =>
   request<GroupPlan>("POST", "/api/group-plan", { focus, sounds });
 export const makeStory = (req: StoryRequest) => request<Story>("POST", "/api/story", req);
@@ -75,6 +76,9 @@ export const diagnoseMistakes = (pairs: MistakePair[]) =>
 export const listTrainingTopics = () => request<TrainingTopic[]>("GET", "/api/training/topics");
 export const getTrainingPlan = (topicId: string) =>
   request<TrainingPlan>("GET", `/api/training/topics/${encodeURIComponent(topicId)}`);
+/** Plain-code word check (no model): used whenever a teacher changes the sounds. */
+export const checkDecodable = (req: DecodableCheckRequest) =>
+  request<{ checks: WordCheck[] }>("POST", "/api/decodable/check", req).then((r) => r.checks);
 export const getRefresher = () => request<Refresher>("GET", "/api/refresher/today");
 export const sendFeedback = (fb: Feedback) => request<void>("POST", "/api/feedback", fb);
 

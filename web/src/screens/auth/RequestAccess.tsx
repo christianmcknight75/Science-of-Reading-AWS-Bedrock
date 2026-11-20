@@ -39,12 +39,11 @@ export default function RequestAccess() {
     }
     setBusy(true);
     try {
-      // The contract has {name, email, district}. Role rides along in the district text until the
-      // contract adds a field (see the open question in the summary).
       await requestAccess({
         name: name.trim(),
         email: email.trim(),
-        district: `${district.trim()} (${role})`,
+        district: district.trim(),
+        job_role: role,
       });
       navigate("/request-received");
     } catch (ex) {
