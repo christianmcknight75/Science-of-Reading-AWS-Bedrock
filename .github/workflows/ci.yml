@@ -14,25 +14,35 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  api:
+  python:
     runs-on: ubuntu-latest
-    defaults: {run: {working-directory: api}}
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env: {POSTGRES_USER: sor, POSTGRES_PASSWORD: local-dev-only, POSTGRES_DB: sor}
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sor" --health-interval 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
-      - run: uv sync
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run mypy app
-      - run: uv run pytest
-  ingest:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.12"}
-      - run: pip install pytest
-      - run: cd ingest/source_search && python -m pytest tests -q
+      - name: API
+        working-directory: api
+        run: |
+          uv sync
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run mypy app tests
+          uv run alembic upgrade head
+          uv run pytest
+      - name: Ingest
+        working-directory: ingest
+        run: |
+          uv sync
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run mypy sor_ingest tests
+          uv run pytest
   web:
     runs-on: ubuntu-latest
     defaults: {run: {working-directory: web}}

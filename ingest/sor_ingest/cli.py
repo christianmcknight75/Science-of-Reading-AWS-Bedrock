@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -24,6 +25,7 @@ ALLOWLIST = Path(__file__).resolve().parent.parent / "allowlist.json"
 
 
 def cmd_search(args: argparse.Namespace) -> int:
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "source_search"))
     import source_search as ss  # stdlib-only script kept in ingest/source_search
 
     since = ss.default_since_year()

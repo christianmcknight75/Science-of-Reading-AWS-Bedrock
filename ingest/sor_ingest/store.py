@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import os
 from typing import Any
 
@@ -44,7 +45,7 @@ def add_candidate(conn: psycopg.Connection[Any], rec: dict[str, Any]) -> str | N
            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
         (
             sid,
-            rec["title"],
+            html.unescape(rec["title"]),
             rec.get("authors") or [],
             rec.get("year"),
             doi,

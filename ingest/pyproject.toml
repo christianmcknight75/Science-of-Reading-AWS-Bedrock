@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "sor-ingest"
 version = "0.1.0"
@@ -28,13 +32,13 @@ python_version = "3.12"
 exclude = ["source_search"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "source_search/tests"]
 pythonpath = [".", "source_search"]
 
 [tool.setuptools]
 packages = ["sor_ingest"]
 
 [[tool.mypy.overrides]]
-module = ["fitz", "source_search"]
+module = ["pymupdf", "source_search"]
 ignore_missing_imports = true
 follow_imports = "skip"

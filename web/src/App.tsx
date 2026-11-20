@@ -1,4 +1,7 @@
+import AdminReview from "./admin/AdminReview";
+
 export default function App() {
+  if (window.location.hash === "#/admin") return <AdminReview />;
   return (
     <main className="mx-auto max-w-3xl p-6">
       <h1 className="text-2xl font-semibold">Reading Helper</h1>

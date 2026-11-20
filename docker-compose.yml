@@ -16,6 +16,7 @@ services:
     build: ./api
     environment:
       DATABASE_URL: postgresql://sor:local-dev-only@db:5432/sor
+      AUTH_MODE: dev  # LOCAL ONLY: everyone is an admin. Deployed stacks use Cognito.
     ports: ["127.0.0.1:8000:8000"]
     depends_on:
       db: {condition: service_healthy}

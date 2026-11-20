@@ -12,5 +12,14 @@ make test
 make lint
 ```
 
+## Knowledge layer (Phase 1)
+```
+docker compose up -d db && make migrate && make seed      # create tables, load myths
+cd ingest && uv run sor-ingest search --topic "phonics instruction"   # candidates only
+uv run sor-ingest allowlist                                           # foundational docs
+# review at http://localhost:5173/#/admin  (after make dev), then:
+uv run sor-ingest process --embedder stub                             # approved sources only
+```
+
 ## Layout
 `web/` React app · `api/` FastAPI · `ingest/` source search and ingestion · `infra/` AWS CDK (Python, later) · `evals/` · `docs/`

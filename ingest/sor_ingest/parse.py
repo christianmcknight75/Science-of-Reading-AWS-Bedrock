@@ -5,7 +5,7 @@ from __future__ import annotations
 import statistics
 from pathlib import Path
 
-import fitz  # PyMuPDF
+import pymupdf
 
 from .chunking import Block
 
@@ -13,7 +13,7 @@ from .chunking import Block
 def parse_pdf(path: Path) -> list[Block]:
     blocks: list[Block] = []
     section: str | None = None
-    with fitz.open(path) as doc:
+    with pymupdf.open(path) as doc:
         sizes = [
             span["size"]
             for page in doc
