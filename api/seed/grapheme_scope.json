@@ -1,0 +1,457 @@
+[
+ {
+  "position": 1,
+  "grapheme": "s",
+  "phonemes": [
+   "S"
+  ],
+  "grade": "K",
+  "note": "DRAFT order, needs SME review"
+ },
+ {
+  "position": 2,
+  "grapheme": "a",
+  "phonemes": [
+   "AE"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 3,
+  "grapheme": "t",
+  "phonemes": [
+   "T"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 4,
+  "grapheme": "p",
+  "phonemes": [
+   "P"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 5,
+  "grapheme": "i",
+  "phonemes": [
+   "IH"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 6,
+  "grapheme": "n",
+  "phonemes": [
+   "N"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 7,
+  "grapheme": "m",
+  "phonemes": [
+   "M"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 8,
+  "grapheme": "d",
+  "phonemes": [
+   "D"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 9,
+  "grapheme": "o",
+  "phonemes": [
+   "AA",
+   "AO"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 10,
+  "grapheme": "c",
+  "phonemes": [
+   "K"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 11,
+  "grapheme": "k",
+  "phonemes": [
+   "K"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 12,
+  "grapheme": "g",
+  "phonemes": [
+   "G"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 13,
+  "grapheme": "f",
+  "phonemes": [
+   "F"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 14,
+  "grapheme": "l",
+  "phonemes": [
+   "L"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 15,
+  "grapheme": "h",
+  "phonemes": [
+   "HH"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 16,
+  "grapheme": "u",
+  "phonemes": [
+   "AH"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 17,
+  "grapheme": "b",
+  "phonemes": [
+   "B"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 18,
+  "grapheme": "r",
+  "phonemes": [
+   "R"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 19,
+  "grapheme": "e",
+  "phonemes": [
+   "EH"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 20,
+  "grapheme": "j",
+  "phonemes": [
+   "JH"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 21,
+  "grapheme": "v",
+  "phonemes": [
+   "V"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 22,
+  "grapheme": "w",
+  "phonemes": [
+   "W"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 23,
+  "grapheme": "x",
+  "phonemes": [
+   "K S"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 24,
+  "grapheme": "y",
+  "phonemes": [
+   "Y"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 25,
+  "grapheme": "z",
+  "phonemes": [
+   "Z"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 26,
+  "grapheme": "qu",
+  "phonemes": [
+   "K W"
+  ],
+  "grade": "K",
+  "note": null
+ },
+ {
+  "position": 27,
+  "grapheme": "sh",
+  "phonemes": [
+   "SH"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 28,
+  "grapheme": "ch",
+  "phonemes": [
+   "CH"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 29,
+  "grapheme": "th",
+  "phonemes": [
+   "TH",
+   "DH"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 30,
+  "grapheme": "ck",
+  "phonemes": [
+   "K"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 31,
+  "grapheme": "ng",
+  "phonemes": [
+   "NG"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 32,
+  "grapheme": "nk",
+  "phonemes": [
+   "NG K"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 33,
+  "grapheme": "wh",
+  "phonemes": [
+   "W"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 34,
+  "grapheme": "ff",
+  "phonemes": [
+   "F"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 35,
+  "grapheme": "ll",
+  "phonemes": [
+   "L"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 36,
+  "grapheme": "ss",
+  "phonemes": [
+   "S"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 37,
+  "grapheme": "a_e",
+  "phonemes": [
+   "EY"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 38,
+  "grapheme": "i_e",
+  "phonemes": [
+   "AY"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 39,
+  "grapheme": "o_e",
+  "phonemes": [
+   "OW"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 40,
+  "grapheme": "u_e",
+  "phonemes": [
+   "UW",
+   "Y UW"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 41,
+  "grapheme": "e_e",
+  "phonemes": [
+   "IY"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 42,
+  "grapheme": "ee",
+  "phonemes": [
+   "IY"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 43,
+  "grapheme": "ai",
+  "phonemes": [
+   "EY"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 44,
+  "grapheme": "ay",
+  "phonemes": [
+   "EY"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 45,
+  "grapheme": "oa",
+  "phonemes": [
+   "OW"
+  ],
+  "grade": "1",
+  "note": null
+ },
+ {
+  "position": 46,
+  "grapheme": "ow",
+  "phonemes": [
+   "OW",
+   "AW"
+  ],
+  "grade": "2",
+  "note": null
+ },
+ {
+  "position": 47,
+  "grapheme": "igh",
+  "phonemes": [
+   "AY"
+  ],
+  "grade": "2",
+  "note": null
+ },
+ {
+  "position": 48,
+  "grapheme": "oo",
+  "phonemes": [
+   "UW",
+   "UH"
+  ],
+  "grade": "2",
+  "note": null
+ },
+ {
+  "position": 49,
+  "grapheme": "ar",
+  "phonemes": [
+   "AA R"
+  ],
+  "grade": "2",
+  "note": null
+ },
+ {
+  "position": 50,
+  "grapheme": "or",
+  "phonemes": [
+   "AO R"
+  ],
+  "grade": "2",
+  "note": null
+ }
+]
