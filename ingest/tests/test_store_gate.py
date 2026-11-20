@@ -82,3 +82,30 @@ def test_direct_status_change_is_refused_and_logged_changes_are_audited(
         (sid,),
     ).fetchone()
     assert row == ("ann", "candidate", "rejected", "not relevant")
+
+
+def test_identity_change_on_reviewed_source_is_audited(conn: psycopg.Connection[Any]) -> None:
+    sid = store.add_candidate(conn, {"source_api": "eric", "source_id": "EJ_TEST2", "title": "Old"})
+    assert sid is not None
+    store.audit_context(conn, "tester", "Rejected: test")
+    conn.execute("UPDATE sources SET status='rejected' WHERE source_id=%s", (sid,))
+    # no actor/reason -> refused
+    conn.execute("SELECT set_config('app.actor', '', true), set_config('app.reason', '', true)")
+    with pytest.raises(psycopg.errors.CheckViolation):
+        conn.execute("UPDATE sources SET title='New' WHERE source_id=%s", (sid,))
+    conn.rollback()
+
+
+def test_identity_change_writes_audit_row(conn: psycopg.Connection[Any]) -> None:
+    sid = store.add_candidate(conn, {"source_api": "eric", "source_id": "EJ_TEST3", "title": "Old"})
+    assert sid is not None
+    store.audit_context(conn, "tester", "Rejected: test")
+    conn.execute("UPDATE sources SET status='rejected' WHERE source_id=%s", (sid,))
+    store.audit_context(conn, "tester", "publisher replaced the document")
+    conn.execute("UPDATE sources SET title='New', year=2024 WHERE source_id=%s", (sid,))
+    row = conn.execute(
+        "SELECT actor, reason FROM source_audit WHERE source_id=%s ORDER BY id DESC LIMIT 1", (sid,)
+    ).fetchone()
+    assert row is not None
+    assert row[0] == "tester"
+    assert "'Old' -> 'New'" in row[1] and "publisher replaced" in row[1]

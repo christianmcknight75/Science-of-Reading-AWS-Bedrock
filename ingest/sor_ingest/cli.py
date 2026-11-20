@@ -45,6 +45,36 @@ def cmd_search(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_correct(args: argparse.Namespace) -> int:
+    """Fix title/year/url of a reviewed source. The database logs who, what changed and why."""
+    fields = {
+        k: v
+        for k, v in {
+            "title": args.title,
+            "year": args.year,
+            "url": args.url,
+            "pdf_url": args.pdf_url,
+        }.items()
+        if v is not None
+    }
+    if not fields:
+        print("nothing to change: pass --title, --year, --url or --pdf-url", file=sys.stderr)
+        return 2
+    with store.connect() as conn:
+        store.audit_context(conn, args.actor, args.reason)
+        sets = ", ".join(f"{k} = %s" for k in fields)
+        cur = conn.execute(
+            f"UPDATE sources SET {sets} WHERE source_id = %s",  # noqa: S608 (keys are fixed above)
+            (*fields.values(), args.source_id),
+        )
+        if cur.rowcount != 1:
+            print(f"no such source: {args.source_id}", file=sys.stderr)
+            conn.rollback()
+            return 1
+    print(f"{args.source_id} updated: {', '.join(fields)}")
+    return 0
+
+
 def cmd_curated(args: argparse.Namespace) -> int:
     with store.connect() as conn:
         report = load_curated(conn)
@@ -103,6 +133,15 @@ def main(argv: list[str] | None = None) -> int:
     cu = sub.add_parser("curated")
     cu.add_argument("--dry-run", action="store_true")
     cu.set_defaults(fn=cmd_curated)
+    co = sub.add_parser("correct", help="fix title/year/url of a reviewed source (audited)")
+    co.add_argument("source_id")
+    co.add_argument("--title")
+    co.add_argument("--year", type=int)
+    co.add_argument("--url")
+    co.add_argument("--pdf-url")
+    co.add_argument("--reason", required=True)
+    co.add_argument("--actor", required=True)
+    co.set_defaults(fn=cmd_correct)
     pr = sub.add_parser("process")
     pr.add_argument("--embedder", choices=["stub", "titan"], default="stub")
     pr.set_defaults(fn=cmd_process)

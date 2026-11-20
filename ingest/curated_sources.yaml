@@ -174,11 +174,12 @@ sources:
     used_for: [qa, training, refreshers]
 
   - id: aero_explicit_instruction
-    title: "Explicit instruction: Practice guide"
+    title: "Teach explicitly"
     publisher: "Australian Education Research Organisation (AERO)"
-    year: 2021
-    url: "https://www.edresearch.edu.au/topics/explicit-instruction"
-    license: "CC BY 4.0 unless otherwise indicated"
+    year: 2024   # published 26 Feb 2024; replaces the 2021 "Explicit instruction: Practice guide", which AERO removed
+    url: "https://www.edresearch.edu.au/guides-resources/practice-guides/teach-explicitly"
+    pdf_url: "https://www.edresearch.edu.au/sites/default/files/2024-02/teach-explicitly-aa.pdf"
+    license: "CC BY 4.0 (stated on p.6 of the PDF)"
     status: ready
     jurisdiction: AU
     source_type: government_guide
