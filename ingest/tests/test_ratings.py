@@ -94,3 +94,35 @@ def test_low_is_stored_as_minimal() -> None:
     ]
     out = annotate_recommendations(blocks)
     assert out[1].evidence_rating == "Minimal"
+
+
+def test_rating_is_not_taken_from_the_previous_recommendations_heading() -> None:
+    """Appendix layout: each recommendation's title line comes first, its rating heading after."""
+    blocks = [
+        Block("", 60, "Recommendation 4 Select texts purposefully"),
+        Block("", 60, "Level of evidence: Minimal Evidence"),
+        Block(WORDS, 60, "Level of evidence: Minimal Evidence"),
+        # Rec 5's title sits under Rec 4's heading; its own heading follows
+        Block(
+            "Recommendation 5 Establish an engaging context",
+            61,
+            "Level of evidence: Minimal Evidence",
+        ),
+        Block("", 61, "Level of evidence: Moderate Evidence"),
+        Block(WORDS, 61, "Level of evidence: Moderate Evidence"),
+        # Rec 1's heading comes before its prose, which must still be rated Strong
+        Block("", 70, "Level of evidence: Strong Evidence"),
+        Block(
+            "Recommendation 1 advocates classroom strategy instruction. " + WORDS,
+            70,
+            "Level of evidence: Strong Evidence",
+        ),
+    ]
+    got = {
+        b.recommendation: b.evidence_rating
+        for b in annotate_recommendations(blocks)
+        if b.recommendation
+    }
+    assert got["Recommendation 4 Select texts purposefully"] == "Minimal"
+    assert got["Recommendation 5 Establish an engaging context"] == "Moderate"
+    assert got[[k for k in got if k.startswith("Recommendation 1")][0]] == "Strong"

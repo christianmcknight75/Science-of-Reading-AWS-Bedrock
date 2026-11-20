@@ -56,19 +56,29 @@ def _annotate(blocks: list[Block], loose: bool) -> list[Block]:
     rec_label: dict[str, str] = {}
     rating: dict[str, str] = {}
     keys: list[str | None] = []
+    last_text_heading: str | None = None
     for b in blocks:
         heading = b.section or ""
         if RESET_RE.match(heading):
             rec_key = None
         m = _start(heading, loose) or (_start(b.text, loose) if b.text.strip() else None)
+        # A block that starts a recommendation from its own text may sit under a heading that
+        # belongs to the previous recommendation (appendix layout: title line first, its rating
+        # heading after). If other text already sits under that heading it is not this block's, so
+        # the rating is read only from the block's own text or from headings that follow.
+        starts_in_text = bool(m) and not _start(heading, loose) and heading == last_text_heading
         if m:
             rec_key = f"Recommendation {m.group(1)}"
             rec_label.setdefault(rec_key, (heading if _start(heading, loose) else b.text)[:200])
         keys.append(rec_key)
         if rec_key:
-            found = LEVEL_RE.search(heading) or LEVEL_RE.search(b.text)
+            found = (None if starts_in_text else LEVEL_RE.search(heading)) or LEVEL_RE.search(
+                b.text
+            )
             if found:
                 rating.setdefault(rec_key, RATING_NAMES[found.group(1).lower()])
+        if b.text.strip():
+            last_text_heading = heading
     return [
         dataclasses.replace(b, recommendation=rec_label.get(k) if k else None,
                             evidence_rating=rating.get(k) if k else None)
