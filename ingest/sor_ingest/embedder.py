@@ -1,25 +1,33 @@
-"""Embedders. Titan Text Embeddings V2 (1024 dims) in AWS; a deterministic stub for local/tests."""
+"""Embedders. A local BGE model (384 dims, no AWS) for real use; a deterministic stub for tests.
+
+No Bedrock embedding model is approved for this account, so embeddings run locally. Model and
+dimensions come from config/models.yaml.
+"""
 
 from __future__ import annotations
 
 import hashlib
-import json
 import math
-import os
 from typing import Any, Protocol
 
-DIMENSIONS = 1024
-TITAN_MODEL_ENV = "EMBEDDING_MODEL_ID"  # model IDs come from config, never hard-coded
-DEFAULT_TITAN_MODEL = "amazon.titan-embed-text-v2:0"
+from . import modelconfig
+
+DIMENSIONS: int = int(modelconfig.model("embeddings")["dimensions"])
 
 
 class Embedder(Protocol):
-    def embed(self, text: str) -> list[float]: ...
+    def embed(self, text: str) -> list[float]:
+        """Embed a passage."""
+        ...
+
+    def embed_query(self, text: str) -> list[float]:
+        """Embed a search question (BGE wants an instruction prefix on queries only)."""
+        ...
 
 
 class StubEmbedder:
-    """Deterministic pseudo-embedding from word hashes. No AWS. Similar texts share words, so
-    they land closer together, which is enough to exercise search code in tests."""
+    """Deterministic pseudo-embedding from word hashes. Similar texts share words, so they land
+    closer together, which is enough to exercise search code in tests."""
 
     def embed(self, text: str) -> list[float]:
         vec = [0.0] * DIMENSIONS
@@ -29,30 +37,38 @@ class StubEmbedder:
         norm = math.sqrt(sum(v * v for v in vec)) or 1.0
         return [v / norm for v in vec]
 
+    def embed_query(self, text: str) -> list[float]:
+        return self.embed(text)
 
-class TitanEmbedder:
-    """Calls Bedrock. Needs AWS credentials (profile sor-dev) and model access."""
 
-    def __init__(self, client: Any = None, model_id: str | None = None) -> None:
-        if client is None:
-            import boto3
+class LocalEmbedder:
+    """BGE small via fastembed (ONNX, CPU). The model is downloaded once and cached."""
 
-            client = boto3.client("bedrock-runtime", region_name="us-east-2")
-        self._client = client
-        self._model_id = model_id or os.environ.get(TITAN_MODEL_ENV, DEFAULT_TITAN_MODEL)
+    def __init__(self, model: Any = None) -> None:
+        cfg = modelconfig.model("embeddings")
+        if model is None:
+            from fastembed import TextEmbedding
 
-    def embed(self, text: str) -> list[float]:
-        body = json.dumps({"inputText": text, "dimensions": DIMENSIONS, "normalize": True})
-        resp = self._client.invoke_model(modelId=self._model_id, body=body)
-        vec: list[float] = json.loads(resp["body"].read())["embedding"]
+            model = TextEmbedding(model_name=cfg["id"])
+        self._model = model
+        self._query_prefix: str = cfg.get("query_prefix", "")
+
+    def _one(self, text: str) -> list[float]:
+        vec = [float(x) for x in next(iter(self._model.embed([text])))]
         if len(vec) != DIMENSIONS:
             raise ValueError(f"expected {DIMENSIONS} dims, got {len(vec)}")
         return vec
+
+    def embed(self, text: str) -> list[float]:
+        return self._one(text)
+
+    def embed_query(self, text: str) -> list[float]:
+        return self._one(self._query_prefix + text)
 
 
 def get_embedder(kind: str) -> Embedder:
     if kind == "stub":
         return StubEmbedder()
-    if kind == "titan":
-        return TitanEmbedder()
+    if kind == "local":
+        return LocalEmbedder()
     raise ValueError(f"unknown embedder: {kind}")

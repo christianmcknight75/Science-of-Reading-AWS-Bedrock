@@ -1,0 +1,23 @@
+# Model IDs for the Reading Helper. Code reads these; nothing else may hard-code a model ID.
+# Source of truth for what is allowed: the Hub's IAM permissions boundary `StorefrontModelBoundary`
+# (allows only anthropic.claude-haiku-5-5 and anthropic.claude-sonnet-4-5-20250929-v1:0; no embedding
+# model). The org SCP (id withheld) currently blocks both (see docs/OPEN_QUESTIONS.md #15).
+# Any value can be overridden with its env var.
+region: us-east-2
+
+models:
+  generation:                 # writes the answer
+    id: us.anthropic.claude-sonnet-4-5-20250929-v1:0
+    env_override: GENERATION_MODEL_ID
+  claim_check:                # verifier: is each claim supported by its passage?
+    id: us.anthropic.claude-sonnet-4-5-20250929-v1:0
+    env_override: CLAIM_CHECK_MODEL_ID
+  intended_fast:              # NOT used yet. Switch generation/claim_check to this once the SCP allows it
+    id: us.anthropic.claude-haiku-5-5
+    env_override: FAST_MODEL_ID
+  embeddings:                 # runs locally (no Bedrock embedding model is approved)
+    provider: local
+    id: BAAI/bge-small-en-v1.5
+    env_override: EMBEDDING_MODEL_ID
+    dimensions: 384           # changing it means a migration and re-embedding everything
+    query_prefix: "Represent this sentence for searching relevant passages: "
