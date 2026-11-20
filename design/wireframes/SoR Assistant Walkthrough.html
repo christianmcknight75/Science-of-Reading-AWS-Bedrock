@@ -1,0 +1,378 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>SoR Assistant Walkthrough (Copy)</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: system layers on the left that light up as a request travels; a "what's happening" panel on the right shows the real data at each step */
+:root {
+  --bg: #f6f7f8; --surface: #ffffff; --ink: #18202a; --muted: #5b6573; --line: #d7dce2;
+  --accent: #1f4e79; --flow: #c77700; --flow-soft: #fff1db; --trail: #f3e6d2;
+  --good: #2f8a57; --good-soft: #e3f3ea; --bad: #b93a32; --bad-soft: #fbe7e5; --warn: #a66a00;
+  --o-asmita: #7b4fb8; --o-muhammad: #2a6fc4; --o-viktoriia: #2f8a57; --o-christian: #c4621e; --o-kritika: #c2457e; --o-aidan: #a68400;
+  --font-display: "Literata", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161b; --surface: #1a2027; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2e3742;
+    --accent: #8db8e8; --flow: #f0a33a; --flow-soft: #3a2a12; --trail: #2a241a;
+    --good: #62c08c; --good-soft: #17301f; --bad: #f08a80; --bad-soft: #3a1c1a; --warn: #e3b15a;
+    --o-asmita: #b48ae6; --o-muhammad: #6fa8ef; --o-viktoriia: #62c08c; --o-christian: #ec9259; --o-kritika: #ea7fb0; --o-aidan: #d9b83a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161b; --surface: #1a2027; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2e3742;
+  --accent: #8db8e8; --flow: #f0a33a; --flow-soft: #3a2a12; --trail: #2a241a;
+  --good: #62c08c; --good-soft: #17301f; --bad: #f08a80; --bad-soft: #3a1c1a; --warn: #e3b15a;
+  --o-asmita: #b48ae6; --o-muhammad: #6fa8ef; --o-viktoriia: #62c08c; --o-christian: #ec9259; --o-kritika: #ea7fb0; --o-aidan: #d9b83a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+}
+.wrap { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+header { display: flex; flex-direction: column; gap: 8px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--font-display); font-weight: 650; font-size: clamp(26px, 4vw, 36px); line-height: 1.15; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 70ch; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.group .label { font-size: 13px; color: var(--muted); margin-right: 2px; }
+.chip, .btn {
+  font: 500 14px var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 999px; padding: 7px 14px; cursor: pointer;
+}
+.chip:hover, .btn:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.btn.primary { background: var(--flow); border-color: var(--flow); color: #fff; min-width: 84px; }
+.btn:disabled { opacity: .45; cursor: default; }
+.switch { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+.switch input { width: 16px; height: 16px; accent-color: var(--accent); }
+.chip:focus-visible, .btn:focus-visible, .box:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 22px; align-items: start; }
+@media (max-width: 960px) { .main { grid-template-columns: minmax(0, 1fr); } }
+
+.diagram { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.layer { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 12px; }
+@media (max-width: 620px) { .layer { grid-template-columns: minmax(0, 1fr); gap: 6px; } }
+.layer-name { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding-right: 6px; border-right: 2px solid var(--line); }
+@media (max-width: 620px) { .layer-name { border-right: 0; border-bottom: 2px solid var(--line); padding-bottom: 4px; } }
+.layer-name b { font-family: var(--font-display); font-weight: 650; font-size: 15.5px; }
+.layer-name small { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+.boxes { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.box {
+  position: relative; flex: 1 1 140px; min-width: 0; text-align: left; cursor: pointer;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px;
+  padding: 9px 11px 9px 14px; font: inherit; display: flex; flex-direction: column; gap: 3px;
+  transition: border-color .2s, background .2s, opacity .2s, transform .2s;
+}
+.box::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--owner, var(--line)); }
+.box .bname { font-weight: 600; font-size: 13.5px; line-height: 1.3; }
+.box .bsub { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.box .tool { display: none; font-family: var(--font-mono); font-size: 11.5px; color: var(--accent); line-height: 1.35; }
+.show-tools .box .tool { display: block; }
+.box.stretch { border-style: dashed; }
+.box.new .bname::after { content: "edge"; margin-left: 6px; font: 500 10.5px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--flow); border: 1px solid var(--flow); border-radius: 4px; padding: 0 4px; vertical-align: 1px; }
+.box:hover { border-color: var(--accent); }
+.box.selected { box-shadow: 0 0 0 2px var(--accent); }
+.playing .box { opacity: .45; }
+.playing .box.visited { opacity: 1; background: var(--trail); }
+.playing .box.current { opacity: 1; border-color: var(--flow); background: var(--flow-soft); transform: translateY(-2px); box-shadow: 0 0 0 2px var(--flow); }
+.badge { position: absolute; top: -9px; right: -7px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--flow); color: #fff; font: 600 12px/22px var(--font-mono); text-align: center; }
+.arrow { color: var(--muted); font-size: 12px; font-family: var(--font-mono); line-height: 1; padding-left: 152px; }
+@media (max-width: 620px) { .arrow { padding-left: 0; } }
+
+.panel { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+@media (max-width: 960px) { .panel { position: static; } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.stepline { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.progress { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.progress i { display: block; height: 100%; width: 0; background: var(--flow); transition: width .3s; }
+.card h2 { font-family: var(--font-display); font-weight: 650; font-size: 19px; margin: 0; text-wrap: balance; }
+.card h3 { font-size: 11.5px; font-family: var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 4px 0 0; font-weight: 500; }
+.card p { margin: 0; }
+.where { font-size: 13px; color: var(--muted); }
+.controls { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* data views */
+.data { display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; }
+.bubble { background: var(--bg); border: 1px solid var(--line); border-radius: 12px 12px 12px 4px; padding: 10px 12px; }
+.red { background: var(--bad-soft); color: var(--bad); text-decoration: line-through; border-radius: 3px; padding: 0 3px; }
+.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 10px; font-size: 13px; }
+.kv dt { font-family: var(--font-mono); color: var(--muted); font-size: 12px; }
+.kv dd { margin: 0; }
+.passage { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; }
+.passage .src { font-size: 12px; color: var(--muted); }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; color: var(--muted); }
+.claim { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 6px; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--line); }
+.claim.ok { background: var(--good-soft); border-color: transparent; }
+.claim.bad { background: var(--bad-soft); border-color: transparent; }
+.claim .mark { font-weight: 700; }
+.claim.ok .mark { color: var(--good); }
+.claim.bad .mark { color: var(--bad); }
+.claim small { display: block; color: var(--muted); font-size: 12px; }
+.answer { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.answer .top { padding: 10px 12px; background: var(--bg); display: flex; flex-direction: column; gap: 6px; }
+.answer .body { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.level { display: inline-flex; align-items: center; gap: 6px; font: 600 12px var(--font-mono); text-transform: uppercase; letter-spacing: .05em; }
+.level.strong { color: var(--good); }
+.level.none { color: var(--warn); }
+.level.myth { color: var(--bad); }
+.level::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.cite { font-size: 12px; color: var(--accent); }
+.example { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.ex-note { font-size: 12.5px; color: var(--muted); }
+
+.owner-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.owner { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.mono { font-family: var(--font-mono); font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { .box, .progress i { transition: none; } .playing .box.current { transform: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Team A.D.A · SoR Assistant · Architecture v2</div>
+    <h1>Watch a request move through the system</h1>
+    <p class="lede">Pick a scenario and press Play. Each step lights up the part of the system doing the work and shows the data at that moment. Click any box to read about it, or turn on tools to see what each part is built with.</p>
+    <div class="toolbar">
+      <div class="group" role="group" aria-label="Scenario">
+        <span class="label">Scenario:</span>
+        <button class="chip" id="sc-ask" data-sc="ask" aria-pressed="true">Teacher asks a question</button>
+        <button class="chip" id="sc-lesson" data-sc="lesson" aria-pressed="false">Lesson plan check</button>
+        <button class="chip" id="sc-none" data-sc="none" aria-pressed="false">No research on it</button>
+        <button class="chip" id="sc-ingest" data-sc="ingest" aria-pressed="false">New paper added</button>
+      </div>
+      <label class="switch"><input type="checkbox" id="tools-toggle"> Show tools</label>
+    </div>
+    <div class="legend" aria-label="Owners">
+      <span><i class="dot" style="background:var(--o-asmita)"></i>Asmita</span>
+      <span><i class="dot" style="background:var(--o-muhammad)"></i>Muhammad</span>
+      <span><i class="dot" style="background:var(--o-viktoriia)"></i>Viktoriia</span>
+      <span><i class="dot" style="background:var(--o-christian)"></i>Christian</span>
+      <span><i class="dot" style="background:var(--o-kritika)"></i>Kritika</span>
+      <span><i class="dot" style="background:var(--o-aidan)"></i>Aidan</span>
+      <span>· <b style="color:var(--flow);font:500 11px var(--font-mono)">EDGE</b> = a feature other teams likely won't have</span>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="diagram playing" id="diagram"></div>
+    <aside class="panel">
+      <div class="card" aria-live="polite">
+        <div class="stepline"><span id="sc-title"></span><span id="counter"></span></div>
+        <div class="progress"><i id="bar"></i></div>
+        <h2 id="st-head"></h2>
+        <p class="where" id="st-where"></p>
+        <p id="st-text"></p>
+        <div class="data" id="st-data"></div>
+        <div class="controls">
+          <button class="btn" id="prev">Back</button>
+          <button class="btn primary" id="play">Play</button>
+          <button class="btn" id="next">Next</button>
+          <button class="btn" id="restart">Restart</button>
+        </div>
+      </div>
+      <div class="card" id="about" hidden>
+        <h3>About this part</h3>
+        <h2 id="a-name"></h2>
+        <div class="owner-row" id="a-owners"></div>
+        <p id="a-does"></p>
+        <p class="mono" id="a-tool"></p>
+      </div>
+      <p class="ex-note">All questions, lesson plans, and answers shown are examples to explain the system. The two sources named are real federal documents.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+const OWNERS = { asmita: ["Asmita","--o-asmita"], muhammad: ["Muhammad","--o-muhammad"], viktoriia: ["Viktoriia","--o-viktoriia"], christian: ["Christian","--o-christian"], kritika: ["Kritika","--o-kritika"], aidan: ["Aidan","--o-aidan"] };
+const LAYERS = [
+  { name: "Teacher", sub: "K-3, any device", items: ["teacher"] },
+  { name: "Web app", sub: "what teachers see", items: ["qa","lessonui","activityui","coachui"] },
+  { name: "Backend API", sub: "the front door", items: ["api","privacy"] },
+  { name: "AI layer", sub: "decides and drafts", items: ["router","prompt","llm","verifier","label"] },
+  { name: "Knowledge", sub: "what it can cite", items: ["index","standards","rubric","myths"] },
+  { name: "Ingestion", sub: "how research gets in", items: ["apis","review","license","parse","embed"] },
+  { name: "Quality", sub: "runs alongside", items: ["eval","qalog"] }
+];
+const C = {
+  teacher: { name: "K-3 teacher", sub: "A few minutes between classes", owners: ["asmita"], tool: "Any browser, phone or laptop", does: "Asks a question, pastes a lesson plan, or asks for an activity. Students never use the tool." },
+  qa: { name: "Q&A chat", sub: "Bottom line first", owners: ["asmita","aidan"], tool: "Next.js + Tailwind on Vercel", does: "Shows a short bottom line, then evidence, an evidence label, and a next step. Citations are one tap away." },
+  lessonui: { name: "Lesson plan check", sub: "Paste a plan", owners: ["asmita","aidan"], tool: "Next.js screen", does: "Returns feedback on each part of a lesson: what is research-backed, what is mixed, and what to change." },
+  activityui: { name: "Activity generator", sub: "Skill + grade", owners: ["asmita","aidan"], tool: "Next.js screen", does: "Teacher picks a skill and grade and gets a classroom activity with its research basis." },
+  coachui: { name: "Coaching scenario", sub: "Stretch goal", owners: ["asmita","aidan"], tool: "Next.js screen", stretch: true, does: "A practice scenario with feedback. Built only if time allows." },
+  api: { name: "API server", sub: "Routes every request", owners: ["christian"], tool: "Python FastAPI on Render", does: "Receives each request, calls the AI layer, returns the answer, and logs timing and errors." },
+  privacy: { name: "Privacy guard", sub: "Removes names", owners: ["aidan","christian"], tool: "Microsoft Presidio", does: "Finds and removes names and personal details before anything is logged or sent to the model." },
+  router: { name: "Router", sub: "Which feature handles it", owners: ["muhammad"], tool: "Python rules", does: "Sends each request to the Q&A, lesson check, or activity chain." },
+  prompt: { name: "Prompt builder", sub: "Passages + format", owners: ["muhammad","asmita"], tool: "Python templates", does: "Gives the model only the retrieved passages, the answer format, and a teacher-friendly tone." },
+  llm: { name: "Language model", sub: "Drafts the answer", owners: ["muhammad"], tool: "Hosted LLM via API", does: "Drafts an answer and ties every claim to a specific passage." },
+  verifier: { name: "Citation verifier", sub: "Checks every claim", owners: ["viktoriia","muhammad"], tool: "LLM check + quote match", isNew: true, does: "Checks each claim against the passage it cites. Unsupported claims are removed before the teacher sees anything." },
+  label: { name: "Evidence label", sub: "How strong is it", owners: ["kritika","muhammad"], tool: "Rubric on source metadata", isNew: true, does: "Rates each answer Strong, Moderate, Emerging, or Mixed based on the type and number of sources behind it." },
+  index: { name: "Research index", sub: "Passages + metadata", owners: ["viktoriia"], tool: "Postgres + pgvector (Supabase)", does: "Stores every passage with source, year, grade, topic, license, and evidence level. Search filters on these." },
+  standards: { name: "MS standards", sub: "Swappable", owners: ["viktoriia"], tool: "Postgres table per state", does: "Mississippi ELA standards for the lesson check and activities. Another state can be swapped in later." },
+  rubric: { name: "Alignment rubric", sub: "From district experts", owners: ["kritika"], tool: "JSON rubric", does: "Criteria the lesson check scores against." },
+  myths: { name: "Myth list", sub: "Practices to flag", owners: ["asmita","kritika"], tool: "Curated table", isNew: true, does: "Common practices research does not support, such as guessing words from pictures. The lesson check flags them kindly with a better option." },
+  apis: { name: "Source search", sub: "ERIC, OpenAlex", owners: ["viktoriia","asmita"], tool: "ERIC + OpenAlex APIs", does: "Finds candidate papers with open-access and date filters. No web scraping." },
+  review: { name: "Source review", sub: "Notion Sources tab", owners: ["asmita","kritika"], tool: "Notion database", does: "A second person approves each source before it can be ingested." },
+  license: { name: "License gate", sub: "Open or public only", owners: ["aidan"], tool: "Notion License field", does: "Confirms the license. Restricted sources stop here." },
+  parse: { name: "Parse and chunk", sub: "PDF to passages", owners: ["viktoriia"], tool: "PyMuPDF", does: "Extracts text and splits it into passages that keep their page numbers." },
+  embed: { name: "Embed and tag", sub: "Weekly refresh", owners: ["viktoriia"], tool: "BGE + GitHub Actions", does: "Makes passages searchable and tags year, grade, and topic. Runs every week." },
+  eval: { name: "Evaluation runner", sub: "Us vs a plain chatbot", owners: ["kritika","christian"], tool: "pytest + eval scripts", isNew: true, does: "Runs the test set through our system and a plain chatbot, and scores citation accuracy and answer quality for the demo." },
+  qalog: { name: "Error log", sub: "Every edge case", owners: ["christian"], tool: "GitHub Issues", does: "Logs each bug and odd answer with the input that caused it." }
+};
+
+const P = (src, text, tags) => `<div class="passage"><div>${text}</div><div class="src">${src}</div><div class="tags">${tags.map(t => `<span class="tag">${t}</span>`).join("")}</div></div>`;
+const IES = "IES Practice Guide, Foundational Skills K-3 (2016)";
+const NRP = "National Reading Panel report (2000), foundational";
+
+const SC = {
+  ask: { title: "Teacher asks a question", steps: [
+    { at: "qa", head: "A teacher asks a question", text: "During planning time, a kindergarten teacher types a question into the chat.",
+      data: `<div class="bubble">Hi, I'm Ms. Carter at Pine Elementary. My kindergarteners just learned m, s, a, and t. What words should I teach first?</div><span class="example">example question</span>` },
+    { at: "api", head: "The API receives it", text: "The web app sends the question to the backend, which starts a log entry for timing and errors." },
+    { at: "privacy", head: "Personal details come out", text: "Names and school names are removed before anything is logged or sent to the model.",
+      data: `<div class="bubble">Hi, I'm <span class="red">Ms. Carter</span> at <span class="red">Pine Elementary</span>. My kindergarteners just learned m, s, a, and t. What words should I teach first?</div>` },
+    { at: "router", head: "It goes to the Q&A chain", text: "The router sees a question about sequencing and sends it to Q&A.",
+      data: `<dl class="kv"><dt>feature</dt><dd>Q&A</dd><dt>topic</dt><dd>Phonics, sequencing</dd><dt>grade</dt><dd>K</dd></dl>` },
+    { at: "index", head: "Search finds the best passages", text: "Only K-3 sources from the last 10 years, plus approved foundational guides, are searched. The top passages come back with their metadata.",
+      data: P(IES, "Teach students to link letters to sounds, then have them blend those sounds into words they can decode.", ["K-3","phonics","strong"]) + P(IES, "Students should practice reading words made only of letter-sound links they have been taught.", ["K-1","decoding","strong"]) + P(NRP, "Systematic phonics instruction helps kindergarten and first grade students learn to read.", ["K-1","phonics","foundational"]) + `<span class="example">paraphrased example passages</span>` },
+    { at: "prompt", head: "The prompt is built", text: "The model gets these passages and nothing else, plus the answer format: bottom line, evidence, next step, in plain teacher language." },
+    { at: "llm", head: "The model drafts an answer", text: "The draft makes three claims, each tied to a passage.",
+      data: `<div class="claim"><span class="mark">1</span><span>Start with short words made only from m, s, a, t, like "at," "sat," "mat," and "Sam." <small>cites passage 2</small></span></div><div class="claim"><span class="mark">2</span><span>Have students say each sound, then blend them into the word. <small>cites passage 1</small></span></div><div class="claim"><span class="mark">3</span><span>Group students by learning style so each child gets words in their preferred mode. <small>cites passage 3</small></span></div>` },
+    { at: "verifier", head: "Every claim is checked", text: "Claim 3 is not supported by the passage it cites, so it is removed. This is how we keep fabricated or wrong citations at zero.",
+      data: `<div class="claim ok"><span class="mark">✓</span><span>Claim 1 supported by passage 2</span></div><div class="claim ok"><span class="mark">✓</span><span>Claim 2 supported by passage 1</span></div><div class="claim bad"><span class="mark">✕</span><span>Claim 3 removed <small>Passage 3 says nothing about learning styles</small></span></div>` },
+    { at: "label", head: "The answer gets an evidence label", text: "Two federal practice guide passages and a foundational report agree, so the label is Strong.",
+      data: `<span class="level strong">Strong evidence</span><dl class="kv"><dt>sources</dt><dd>1 practice guide, 1 foundational report</dd><dt>agreement</dt><dd>consistent</dd></dl>` },
+    { at: "qa", head: "The teacher sees the answer", text: "Bottom line first, so it is useful in under a minute.",
+      data: `<div class="answer"><div class="top"><b>Start with short words built only from m, s, a, and t, like "at," "sat," "mat," and "Sam."</b><span class="level strong">Strong evidence</span></div><div class="body"><span>Have students say each sound, then blend them into the word. Add one new letter at a time so every word stays decodable.</span><span><b>Try next:</b> add "p" and build "map," "tap," and "sap."</span><span class="cite">IES Practice Guide (2016) · National Reading Panel (2000)</span></div></div>` }
+  ]},
+  lesson: { title: "Lesson plan check", steps: [
+    { at: "lessonui", head: "A teacher pastes a lesson plan", text: "A first grade teacher wants to know if her phonics lesson follows best practice.",
+      data: `<div class="bubble"><b>Warm-up:</b> Picture walk. Students guess tricky words from the pictures.<br><b>Main:</b> Segment CVC words with sound boxes.<br><b>Practice:</b> Read a decodable book with short-a words.</div><span class="example">example lesson plan</span>` },
+    { at: "privacy", head: "Personal details come out", text: "Any teacher, student, or school names in the plan are removed first." },
+    { at: "router", head: "It goes to the lesson check", text: "The router sends it to the lesson check chain, which splits the plan into three parts." },
+    { at: "rubric", head: "Each part is matched to the rubric", text: "The district rubric says what a strong foundational skills lesson includes.",
+      data: `<dl class="kv"><dt>warm-up</dt><dd>word recognition strategy</dd><dt>main</dt><dd>phonemic awareness, explicit</dd><dt>practice</dt><dd>decodable text</dd></dl>` },
+    { at: "myths", head: "A myth is caught", text: "Guessing words from pictures is on the myth list. Research says students should decode the word from its letters instead.",
+      data: `<div class="claim bad"><span class="mark">!</span><span>Warm-up matches "guessing from pictures" <small>Flag it kindly and suggest a better warm-up</small></span></div>` },
+    { at: "standards", head: "Standards are matched", text: "Each part is mapped to the matching Mississippi grade 1 foundational skills standard." },
+    { at: "index", head: "Research is pulled for each part", text: "Passages on decoding, sound boxes, and decodable text come back for the three parts." },
+    { at: "llm", head: "Feedback is drafted", text: "The model writes one short note per part, using only those passages." },
+    { at: "verifier", head: "Citations are checked", text: "Every note is checked against its passage before it is shown." },
+    { at: "lessonui", head: "The teacher sees feedback by part", text: "Clear, kind, and specific.",
+      data: `<div class="answer"><div class="body"><span><span class="level myth">Change this</span><br>Warm-up: instead of guessing from pictures, have students sound out 3 to 4 short-a words.</span><span><span class="level strong">Research-backed</span><br>Main: segmenting with sound boxes builds phonemic awareness.</span><span><span class="level strong">Research-backed</span><br>Practice: decodable text lets students apply what they just learned.</span><span class="cite">IES Practice Guide (2016)</span></div></div>` }
+  ]},
+  none: { title: "No research on it", steps: [
+    { at: "qa", head: "A teacher asks something off-topic", text: "Not every question has research behind it in our corpus.",
+      data: `<div class="bubble">Which reading app should our school buy?</div><span class="example">example question</span>` },
+    { at: "router", head: "It goes to Q&A", text: "The router treats it as a question." },
+    { at: "index", head: "Search comes back empty", text: "No passage passes the relevance threshold. The corpus compares teaching practices, not products.",
+      data: `<dl class="kv"><dt>passages found</dt><dd>0 above threshold</dd></dl>` },
+    { at: "verifier", head: "No evidence means no answer", text: "With nothing to cite, the system does not let the model guess." },
+    { at: "qa", head: "The teacher gets an honest reply", text: "This is where a plain chatbot would make something up.",
+      data: `<div class="answer"><div class="top"><b>Our research library doesn't compare specific products, so I can't recommend one.</b><span class="level none">No research found</span></div><div class="body"><span>I can tell you what research says a good phonics program should include, so you can judge apps yourself. Want that?</span></div></div>` }
+  ]},
+  ingest: { title: "New paper added", steps: [
+    { at: "apis", head: "A new paper is found", text: "The weekly search of ERIC and OpenAlex finds a new open-access study.",
+      data: `<dl class="kv"><dt>title</dt><dd>Example: phoneme blending in kindergarten</dd><dt>year</dt><dd>2024</dd><dt>access</dt><dd>open</dd></dl><span class="example">example paper</span>` },
+    { at: "review", head: "A teammate reviews it", text: "It appears in the Notion Sources tab as To review. A second person checks it and moves it to Approved." },
+    { at: "license", head: "The license is confirmed", text: "Aidan confirms it is open access with a license that allows use.",
+      data: `<dl class="kv"><dt>license</dt><dd>CC BY 4.0</dd><dt>status</dt><dd>cleared</dd></dl>` },
+    { at: "parse", head: "Text becomes passages", text: "The PDF is split into passages that keep their page numbers, so citations point to the right place.",
+      data: `<dl class="kv"><dt>passages</dt><dd>38</dd><dt>pages kept</dt><dd>yes</dd></dl>` },
+    { at: "embed", head: "Passages are tagged", text: "Each passage is made searchable and tagged with year, grade, topic, and evidence type.",
+      data: `<div class="tags"><span class="tag">2024</span><span class="tag">K</span><span class="tag">phonemic awareness</span><span class="tag">peer-reviewed</span></div>` },
+    { at: "index", head: "It's live for the next question", text: "No retraining. The next teacher who asks about blending can get this study in their answer." }
+  ]}
+};
+
+const diagram = document.getElementById("diagram");
+const boxEls = {};
+LAYERS.forEach((L, i) => {
+  if (i > 0) { const a = document.createElement("div"); a.className = "arrow"; a.textContent = i === 5 ? "↑ fills the knowledge layer" : i === 6 ? "" : "↓"; if (a.textContent) diagram.appendChild(a); }
+  const row = document.createElement("div"); row.className = "layer";
+  const nm = document.createElement("div"); nm.className = "layer-name";
+  nm.innerHTML = "<b></b><small></small>"; nm.querySelector("b").textContent = L.name; nm.querySelector("small").textContent = L.sub;
+  const boxes = document.createElement("div"); boxes.className = "boxes";
+  L.items.forEach(id => {
+    const c = C[id]; const b = document.createElement("button");
+    b.className = "box" + (c.stretch ? " stretch" : "") + (c.isNew ? " new" : "");
+    b.style.setProperty("--owner", "var(" + OWNERS[c.owners[0]][1] + ")");
+    b.innerHTML = '<span class="bname"></span><span class="bsub"></span><span class="tool"></span>';
+    b.querySelector(".bname").textContent = c.name; b.querySelector(".bsub").textContent = c.sub; b.querySelector(".tool").textContent = c.tool;
+    b.addEventListener("click", () => about(id));
+    boxEls[id] = b; boxes.appendChild(b);
+  });
+  row.append(nm, boxes); diagram.appendChild(row);
+});
+
+let sc = "ask", i = 0, timer = null;
+const $ = id => document.getElementById(id);
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function render() {
+  const S = SC[sc], st = S.steps[i];
+  Object.values(boxEls).forEach(b => { b.classList.remove("current", "visited"); b.querySelector(".badge")?.remove(); });
+  S.steps.slice(0, i).forEach(s => boxEls[s.at].classList.add("visited"));
+  const cur = boxEls[st.at]; cur.classList.add("current");
+  const badge = document.createElement("span"); badge.className = "badge"; badge.textContent = i + 1; cur.appendChild(badge);
+  $("sc-title").textContent = S.title;
+  $("counter").textContent = `Step ${i + 1} of ${S.steps.length}`;
+  $("bar").style.width = ((i + 1) / S.steps.length * 100) + "%";
+  $("st-head").textContent = st.head;
+  $("st-where").textContent = C[st.at].name + " · " + C[st.at].owners.map(o => OWNERS[o][0]).join(", ");
+  $("st-text").textContent = st.text;
+  $("st-data").innerHTML = st.data || "";
+  $("prev").disabled = i === 0;
+  $("next").disabled = i === S.steps.length - 1;
+  if (window.innerWidth > 960 && !reduce) cur.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+function stop() { clearInterval(timer); timer = null; $("play").textContent = "Play"; }
+function play() {
+  if (timer) { stop(); return; }
+  if (i === SC[sc].steps.length - 1) { i = 0; render(); }
+  $("play").textContent = "Pause";
+  timer = setInterval(() => { if (i < SC[sc].steps.length - 1) { i++; render(); } else stop(); }, reduce ? 4000 : 3200);
+}
+function about(id) {
+  const c = C[id];
+  Object.values(boxEls).forEach(b => b.classList.remove("selected"));
+  boxEls[id].classList.add("selected");
+  $("about").hidden = false;
+  $("a-name").textContent = c.name;
+  const ow = $("a-owners"); ow.innerHTML = "";
+  c.owners.forEach(o => { const s = document.createElement("span"); s.className = "owner"; s.innerHTML = '<i class="dot"></i>'; s.querySelector(".dot").style.background = "var(" + OWNERS[o][1] + ")"; s.append(OWNERS[o][0]); ow.appendChild(s); });
+  $("a-does").textContent = c.does;
+  $("a-tool").textContent = "Built with: " + c.tool;
+}
+document.querySelectorAll(".chip[data-sc]").forEach(ch => ch.addEventListener("click", () => {
+  stop(); sc = ch.dataset.sc; i = 0;
+  document.querySelectorAll(".chip[data-sc]").forEach(c => c.setAttribute("aria-pressed", String(c === ch)));
+  render();
+}));
+$("prev").addEventListener("click", () => { stop(); if (i > 0) { i--; render(); } });
+$("next").addEventListener("click", () => { stop(); if (i < SC[sc].steps.length - 1) { i++; render(); } });
+$("restart").addEventListener("click", () => { stop(); i = 0; render(); });
+$("play").addEventListener("click", play);
+$("tools-toggle").addEventListener("change", e => diagram.classList.toggle("show-tools", e.target.checked));
+document.addEventListener("keydown", e => {
+  if (e.target.closest("input")) return;
+  if (e.key === "ArrowRight") $("next").click();
+  if (e.key === "ArrowLeft") $("prev").click();
+});
+render();
+</script>
+
+</body></html>
