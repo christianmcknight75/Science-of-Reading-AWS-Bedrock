@@ -41,11 +41,56 @@ REFERENCE_RE = re.compile(
 REFERENCE_TAIL_RE = re.compile(
     r"\bdoi\b|https?://|\bpp?\.\s*\d|\b\d+\(\d+\)|\bvol\.|\bRetrieved\b", re.I
 )
+FRONT_PAGES = 2  # journal front matter is only looked for on the first two pages
+JOURNAL_META_RE = re.compile(
+    r"journal homepage|contents lists available|licensee mdpi|open access article|\u00a9"
+    r"|creative commons attribution|terms and conditions of the creative commons"
+    r"|^distributed under the terms\b|^conditions of the creative commons|^attribution \(cc by"
+    r"|^(received|revised|accepted|published)( online| in revised form)?\s*[:\d]"
+    r"|^(academic editors?|available online|article history)\b"
+    r"|^a r t i c l e\s+i n f o|^article info\b|\bissn\b|^correspondence:|\bcorresponding author"
+    r"|@[\w-]+\.\w{2,}",
+    re.IGNORECASE,
+)
+DOI_LINE_RE = re.compile(r"doi\.org/\S+", re.IGNORECASE)
+AFFIL_MARK = r"(?:\d|[a-z]|\*)"
+AUTHOR_MARK_RE = re.compile(rf"\s{AFFIL_MARK}\s?(?:[,\u00b7]|$)")
+NAME_WITH_MARK_RE = re.compile(r"^[A-Z][\w.'\u2019-]+(?: [A-Z][\w.'\u2019-]*){0,3} (?:[a-z]|\*)$")
+AFFIL_START_RE = re.compile(rf"^{AFFIL_MARK}\s")
+INSTITUTION_RE = re.compile(
+    r"University|Universit[e\u00e9y]|Institute|Department|Laborator|CNRS|College|Centre|Center"
+    r"|School of|Faculty",
+)
+ADDRESS_RE = re.compile(r"\b\d{4,5}\b|\b(USA|UK|France|Australia|Canada|Germany|Spain|Italy)\b")
 EDGE = 0.07  # top and bottom 7% of a page are where headers and footers live
 
 
 def _norm(text: str) -> str:
     return re.sub(r"\d+", "#", " ".join(text.lower().split()))
+
+
+def front_matter_reason(text: str) -> str | None:
+    """Journal title-page text that is not part of the paper's content: article history, licence
+    and copyright lines, DOI lines, author lists and affiliations. Only used on the first pages."""
+    n = len(text.split())
+    if JOURNAL_META_RE.search(text) and n <= 90:
+        return "journal front matter (article history, licence or contact line)"
+    if n <= 25 and DOI_LINE_RE.search(text):
+        return "journal front matter (DOI line)"
+    if n <= 6 and NAME_WITH_MARK_RE.match(text):
+        return "author name"
+    if n <= 60 and len(AUTHOR_MARK_RE.findall(text)) >= 2:
+        caps = sum(1 for w in text.split() if w[:1].isupper())
+        if caps / n >= 0.3:
+            return "author list"
+    if (
+        n <= 120
+        and AFFIL_START_RE.match(text)
+        and INSTITUTION_RE.search(text)
+        and ADDRESS_RE.search(text)
+    ):
+        return "author affiliations"
+    return None
 
 
 def _is_reference(text: str) -> bool:
@@ -118,6 +163,7 @@ def parse_pdf(
 
         section: str | None = None
         skipping = False
+        after_editors = False
         for page_no, page_blocks in enumerate(raw, start=1):
             label = doc[page_no - 1].get_label() or str(page_no)
             for text, _bbox, size, bold in page_blocks:
@@ -127,6 +173,14 @@ def parse_pdf(
                 if _norm(text) in repeated:
                     drop(page_no, "running header or footer", text)
                     continue
+                if page_no <= FRONT_PAGES:
+                    why = front_matter_reason(text)
+                    if why is None and after_editors and len(text.split()) <= 6:
+                        why = "editor name (continues an 'Academic Editors' line)"
+                    after_editors = bool(why) and text.lower().startswith("academic editor")
+                    if why:
+                        drop(page_no, why, text)
+                        continue
                 if re.fullmatch(r"[A-Za-z]", text):
                     drop(page_no, "single-letter heading", text)
                     continue  # glossary letter dividers; not a section

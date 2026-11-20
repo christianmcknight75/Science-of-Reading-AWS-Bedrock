@@ -85,3 +85,12 @@ def test_falls_back_to_prose_when_a_guide_states_ratings_only_in_an_appendix() -
     ]
     out = annotate_recommendations(blocks)
     assert out[1].recommendation is not None and out[1].evidence_rating == "Strong"
+
+
+def test_low_is_stored_as_minimal() -> None:
+    blocks = [
+        Block("", 40, "Recommendation 4. Monitor the progress of tier 2 students"),
+        Block(WORDS, 40, "Level of evidence: Low"),
+    ]
+    out = annotate_recommendations(blocks)
+    assert out[1].evidence_rating == "Minimal"

@@ -15,6 +15,8 @@ Public Records Act and CLAUDE.md rule 4: the record of who admitted a source to 
 - WWC practice guides: the guide's own rating per recommendation (Strong / Moderate / Minimal) maps to Very sure / Fairly sure / Not sure yet. Unrated WWC passages never raise the label.
 - Government guides and summaries never raise the label alone.
 - Unrated primary evidence: 2+ independent agreeing reviews/meta-analyses = Very sure; 1 review = Fairly sure; 1 study = Not sure yet unless randomized or >= 1,000 students with a comparison group (Fairly sure).
+- Older WWC guides (2009-2010, e.g. the RTI guide) rate evidence Strong / Moderate / Low. Low is the same bottom tier as the later "Minimal", so it is stored as Minimal (Not sure yet).
+- A WWC rating is shown to the answer engine only after a person has verified the extracted ratings against the official guide (`sor-ingest verify-ratings`, logged in `source_audit`). Re-processing with different ratings withdraws the verification.
 - Disagreeing evidence caps the label at Not sure yet and the answer says the research is mixed.
 
 ## Known limitation: overlapping evidence (accepted for the PoC)

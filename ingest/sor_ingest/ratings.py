@@ -14,8 +14,13 @@ from .chunking import Block
 
 # A heading reads "Recommendation 2. Title", "Recommendation 2: Title" or just "Recommendation 2".
 # Prose such as "Recommendation 4 addresses using data..." is not a heading.
+# Older WWC guides (2009-2010) rate evidence Strong / Moderate / Low. Low is the same bottom tier as
+# the later "Minimal", so it is stored as Minimal (decision 2026-11-20).
+RATING_NAMES = {"strong": "Strong", "moderate": "Moderate", "minimal": "Minimal", "low": "Minimal"}
 REC_RE = re.compile(r"^\s*Recommendation\s+(\d+)\s*(?:[.:]|$)", re.IGNORECASE)
-LEVEL_RE = re.compile(r"Level of evidence\s*[:\-–—]?\s*(Strong|Moderate|Minimal)\b", re.IGNORECASE)
+LEVEL_RE = re.compile(
+    r"Level of evidence\s*[:\-–—]?\s*(Strong|Moderate|Minimal|Low)\b", re.IGNORECASE
+)
 RESET_RE = re.compile(
     r"^\s*(Appendix|References|Endnotes|Glossary|Introduction|Overview|Acknowledg|Disclosure)",
     re.IGNORECASE,
@@ -63,7 +68,7 @@ def _annotate(blocks: list[Block], loose: bool) -> list[Block]:
         if rec_key:
             found = LEVEL_RE.search(heading) or LEVEL_RE.search(b.text)
             if found:
-                rating.setdefault(rec_key, found.group(1).capitalize())
+                rating.setdefault(rec_key, RATING_NAMES[found.group(1).lower()])
     return [
         dataclasses.replace(b, recommendation=rec_label.get(k) if k else None,
                             evidence_rating=rating.get(k) if k else None)
