@@ -11,6 +11,17 @@ class Settings(BaseSettings):
     admin_group: str = "admin"
     snapshot_dir: str = "data/local/license_snapshots"
 
+    # Accounts. auth_mode: "cognito" (default, fails closed), "local" (local dev issuer + real
+    # users table, for development and tests) or "dev" (no auth at all: everyone is an admin).
+    # Phase 5 changes only the issuer, client id and JWKS URL to Cognito's.
+    auth_issuer: str = ""  # empty: Cognito's URL for the pool; in local mode the dev issuer
+    auth_jwks_url: str = ""  # empty: <issuer>/.well-known/jwks.json
+    auth_token_minutes: int = 60
+    dev_issuer_key_path: str = "data/local/dev_issuer_key.pem"
+    sign_in_max_failures: int = 5
+    sign_in_window_minutes: int = 15
+    request_access_per_hour: int = 3
+
     # Q&A engine. The kill switch is OFF until Viktoriia approves live model calls.
     qa_enabled: bool = False
     aws_profile: str = ""  # local dev only (sor-dev); empty = default credential chain
