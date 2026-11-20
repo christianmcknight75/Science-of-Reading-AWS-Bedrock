@@ -2,7 +2,8 @@
 
 sor-ingest search --topic "phonemic awareness" --rows 20   # -> status 'candidate' (no parsing)
 sor-ingest allowlist                                       # foundational docs -> 'candidate'
-sor-ingest process --embedder stub|titan                   # approved sources only
+sor-ingest embed --embedder local                       # fill missing embeddings
+sor-ingest process --embedder stub|local                   # approved sources only
 """
 
 from __future__ import annotations
@@ -216,6 +217,24 @@ def cmd_process(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_embed(args: argparse.Namespace) -> int:
+    """Fill in missing embeddings from stored passage text (no re-parsing; ratings untouched)."""
+    embedder = get_embedder(args.embedder)
+    with store.connect() as conn:
+        rows = conn.execute(
+            "SELECT passage_id, text FROM passages WHERE embedding IS NULL ORDER BY passage_id"
+        ).fetchall()
+        for i, (passage_id, text) in enumerate(rows, 1):
+            conn.execute(
+                "UPDATE passages SET embedding = %s::vector WHERE passage_id = %s",
+                (str(embedder.embed(text)), passage_id),
+            )
+            if i % 200 == 0:
+                print(f"{i}/{len(rows)}")
+    print(f"embedded {len(rows)} passages with the {args.embedder} embedder")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="sor-ingest")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -244,9 +263,12 @@ def main(argv: list[str] | None = None) -> int:
     vr.add_argument("--note", required=True)
     vr.set_defaults(fn=cmd_verify_ratings)
     pr = sub.add_parser("process")
-    pr.add_argument("--embedder", choices=["stub", "titan"], default="stub")
+    pr.add_argument("--embedder", choices=["stub", "local"], default="stub")
     pr.add_argument("--all", action="store_true", help="also re-process sources that have passages")
     pr.set_defaults(fn=cmd_process)
+    em = sub.add_parser("embed", help="embed passages that have no embedding yet")
+    em.add_argument("--embedder", choices=["stub", "local"], default="local")
+    em.set_defaults(fn=cmd_embed)
     args = p.parse_args(argv)
     return int(args.fn(args))
 
