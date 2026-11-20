@@ -14,6 +14,9 @@ const SCREENS: { name: string; hash: string; h1: string | RegExp }[] = [
   { name: "Tomorrow's groups", hash: "#/teaching/groups", h1: "Tomorrow's small groups" },
   { name: "Group plan", hash: "#/teaching/groups/g-b", h1: /Group B · 15 minutes/ },
   { name: "Why is a kid stuck?", hash: "#/teaching/stuck", h1: "Why is a kid stuck?" },
+  { name: "My training", hash: "#/training", h1: "Turn your training into practice" },
+  { name: "Training topic", hash: "#/training/topic/segmenting", h1: "Breaking words into sounds" },
+  { name: "1-minute refreshers", hash: "#/training/refreshers", h1: "Grow at your own pace" },
   { name: "Make a story", hash: "#/teaching/story", h1: "Make a story they can read" },
   {
     name: "Answer",
@@ -277,4 +280,51 @@ test("Why is a kid stuck: unclear mistake is answered honestly", async ({ page }
   await page.getByRole("button", { name: "Find the skill" }).click();
   await expect(page.getByText(/can't tell/i).first()).toBeVisible();
   await expectNoSeriousViolations(page);
+});
+
+test("My training: pick a topic, choose a day, add to it, make it shorter", async ({ page }) => {
+  await fast(page);
+  await page.goto("/#/training");
+  await page.getByRole("link", { name: /Turn into a plan.*Breaking words into sounds/ }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Breaking words into sounds");
+  await expect(page.getByRole("heading", { name: "Research says" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Idea for your class" })).toBeVisible();
+  await page.getByLabel("Tue").check();
+  await page.getByRole("button", { name: "Add to Tue" }).click();
+  await expect(page.getByText("Added to Tue.")).toBeVisible();
+  await page.getByRole("button", { name: "Make it shorter" }).click();
+  await expect(page.getByText(/Tap it out \(short\)/)).toBeVisible();
+  await page.getByLabel("Only a few").check();
+  await expect(page.getByText(/We don't save it/)).toBeVisible();
+  await expectNoSeriousViolations(page);
+  await expectTargets(page);
+});
+
+test("My training: free text finds a topic; unknown text is answered honestly", async ({
+  page,
+}) => {
+  await fast(page);
+  await page.goto("/#/training");
+  await page.getByLabel("Just tell us what you learned").fill("something about gardens");
+  await page.getByRole("button", { name: "Find a plan" }).click();
+  await expect(page.getByText(/couldn't match/)).toBeVisible();
+  await page.getByLabel("Just tell us what you learned").fill("we learned digraphs");
+  await page.getByRole("button", { name: "Find a plan" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Two letters, one sound");
+});
+
+test("1-minute refresher: answer reveals a cited explanation; ratings are keyboard operable", async ({
+  page,
+}) => {
+  await fast(page);
+  await page.goto("/#/training/refreshers");
+  await page.getByRole("button", { name: "Not true" }).click();
+  await expect(page.getByText("Yes, you've got it.")).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Source 1:/ }).first()).toBeVisible();
+  const got = page.getByRole("group", { name: "Tricky words" }).getByLabel("Got it");
+  await got.focus();
+  await page.keyboard.press("Space");
+  await expect(got).toBeChecked();
+  await expectNoSeriousViolations(page);
+  await expectTargets(page);
 });

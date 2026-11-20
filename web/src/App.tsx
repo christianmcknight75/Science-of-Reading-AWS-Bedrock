@@ -8,7 +8,10 @@ import Answer from "./screens/Answer";
 import GroupPlan from "./screens/GroupPlan";
 import Groups from "./screens/Groups";
 import Home from "./screens/Home";
+import Refreshers from "./screens/Refreshers";
 import Stuck from "./screens/Stuck";
+import Training from "./screens/Training";
+import TrainingTopic from "./screens/TrainingTopic";
 import MakeStory from "./screens/MakeStory";
 
 function NotFound() {
@@ -39,6 +42,10 @@ function route(path: string, query: URLSearchParams): { node: ReactNode; board?:
   if (path === "/teaching" || path === "/teaching/groups") return { node: <Groups /> };
   const plan = match("/teaching/groups/:id", path);
   if (plan) return { node: <GroupPlan id={plan.id} /> };
+  if (path === "/training") return { node: <Training /> };
+  if (path === "/training/refreshers") return { node: <Refreshers /> };
+  const topic = match("/training/topic/:id", path);
+  if (topic) return { node: <TrainingTopic id={topic.id} /> };
   if (path === "/teaching/stuck") return { node: <Stuck /> };
   if (path === "/teaching/story") return { node: <MakeStory /> };
   if (path === "/ask") return { node: <Answer /> };

@@ -31,6 +31,9 @@ const SHOTS: Shot[] = [
   { file: "06-make-a-story", hash: "#/teaching/story" },
   { file: "07-tomorrows-groups", hash: "#/teaching/groups" },
   { file: "08-group-plan", hash: "#/teaching/groups/g-b" },
+  { file: "10-my-training", hash: "#/training" },
+  { file: "11-training-topic", hash: "#/training/topic/segmenting" },
+  { file: "12-refreshers", hash: "#/training/refreshers" },
   {
     file: "09-why-is-a-kid-stuck",
     hash: "#/teaching/stuck",
