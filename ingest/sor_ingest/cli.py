@@ -12,6 +12,7 @@ import os
 import sys
 import urllib.request
 from pathlib import Path
+from typing import Any
 
 from . import store
 from .chunking import chunk_blocks
@@ -100,6 +101,61 @@ def _download(url: str, dest: Path) -> None:
     dest.write_bytes(data)
 
 
+def _rated_recommendations(conn: Any, source_id: str) -> list[tuple[str, str, int, str, str]]:
+    return list(
+        conn.execute(
+            """SELECT recommendation, evidence_rating, count(*),
+                      (array_agg(page_label ORDER BY page))[1],
+                      (array_agg(page_end_label ORDER BY page_end DESC))[1]
+               FROM passages WHERE source_id = %s AND recommendation IS NOT NULL
+               GROUP BY 1, 2 ORDER BY min(page)""",
+            (source_id,),
+        ).fetchall()
+    )
+
+
+def cmd_ratings(args: argparse.Namespace) -> int:
+    with store.connect() as conn:
+        v = conn.execute(
+            "SELECT ratings_verified_by, ratings_verified_at FROM sources WHERE source_id=%s",
+            (args.source_id,),
+        ).fetchone()
+        for rec, rating, n, first, last in _rated_recommendations(conn, args.source_id):
+            print(f"{rating or '(no rating)':9} {rec[:110]}  [{n} passages, pages {first}-{last}]")
+    print("verified by", v[0], "on", v[1]) if v and v[0] else print("NOT verified: hidden")
+    return 0
+
+
+def cmd_verify_ratings(args: argparse.Namespace) -> int:
+    """A person checked the extracted ratings against the official guide. Logged in source_audit;
+    the retrieval view shows ratings only for verified sources."""
+    with store.connect() as conn:
+        rows = _rated_recommendations(conn, args.source_id)
+        sig = store.ratings_signature((r[0], r[1]) for r in rows)
+        if not sig:
+            print(f"{args.source_id} has no extracted ratings to verify", file=sys.stderr)
+            return 1
+        status = conn.execute(
+            "SELECT status FROM sources WHERE source_id=%s", (args.source_id,)
+        ).fetchone()
+        if status is None:
+            print(f"no such source: {args.source_id}", file=sys.stderr)
+            return 1
+        conn.execute(
+            """UPDATE sources SET ratings_verified_by=%s, ratings_verified_at=now(),
+                 ratings_verified_note=%s, ratings_signature=%s WHERE source_id=%s""",
+            (args.actor, args.note, sig, args.source_id),
+        )
+        conn.execute(
+            "INSERT INTO source_audit (source_id, actor, from_status, to_status, reason) "
+            "VALUES (%s,%s,%s,%s,%s)",
+            (args.source_id, args.actor, status[0], status[0],
+             f"Evidence ratings verified ({sig}): {args.note}"),
+        )  # fmt: skip
+    print(f"{args.source_id}: ratings verified ({sig})")
+    return 0
+
+
 GRADE_SUFFIX = {"k": "K", "g1": "1", "g2": "2", "g3": "3"}
 
 
@@ -151,6 +207,10 @@ def cmd_process(args: argparse.Namespace) -> int:
                 conn, source_id, passages, [embedder.embed(p.text) for p in passages]
             )
             print(f"{source_id}: {n} passages from {len(files)} file(s)")
+            if store.revoke_if_ratings_changed(conn, source_id, passages):
+                print(
+                    f"WARNING {source_id}: ratings changed; verification withdrawn, re-check them"
+                )
             done += 1
     print(f"processed {done} sources, skipped {skipped}")
     return 0
@@ -175,6 +235,14 @@ def main(argv: list[str] | None = None) -> int:
     co.add_argument("--reason", required=True)
     co.add_argument("--actor", required=True)
     co.set_defaults(fn=cmd_correct)
+    ra = sub.add_parser("ratings", help="show the extracted evidence ratings of a source")
+    ra.add_argument("source_id")
+    ra.set_defaults(fn=cmd_ratings)
+    vr = sub.add_parser("verify-ratings", help="record that a person checked the ratings")
+    vr.add_argument("source_id")
+    vr.add_argument("--actor", required=True)
+    vr.add_argument("--note", required=True)
+    vr.set_defaults(fn=cmd_verify_ratings)
     pr = sub.add_parser("process")
     pr.add_argument("--embedder", choices=["stub", "titan"], default="stub")
     pr.add_argument("--all", action="store_true", help="also re-process sources that have passages")

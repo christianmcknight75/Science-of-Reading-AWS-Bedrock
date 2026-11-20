@@ -8,7 +8,7 @@ Rules
 - A passage under MERGE_BELOW (150) words is merged into its neighbour. The merge may cross a
   section boundary (the later heading is written in front of its text), but never a change of
   recommendation, evidence rating or grade, so a rating can never leak onto text it does not cover.
-- A passage records the first and last PDF page it covers.
+- A passage records the first and last PDF page it covers, and the printed page labels of both.
 """
 
 from __future__ import annotations
@@ -35,6 +35,7 @@ class Block:
     recommendation: str | None = None
     evidence_rating: str | None = None
     grade: str | None = None
+    page_label: str | None = None  # the page number printed on the page, when the PDF has labels
 
 
 @dataclass(frozen=True)
@@ -47,6 +48,8 @@ class Passage:
     evidence_rating: str | None = None
     page_end: int | None = None
     grade: str | None = None
+    page_label: str | None = None
+    page_end_label: str | None = None
 
 
 def words(text: str) -> int:
@@ -143,6 +146,8 @@ def chunk_blocks(source_id: str, blocks: list[Block]) -> list[Passage]:
             recommendation=g[0].recommendation,
             evidence_rating=g[0].evidence_rating,
             grade=g[0].grade,
+            page_label=g[0].page_label or str(g[0].page),
+            page_end_label=g[-1].page_label or str(g[-1].page),
         )
         for i, g in enumerate(merged, start=1)
     ]

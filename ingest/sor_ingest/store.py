@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import html
 import os
+import re
+from collections.abc import Iterable
 from typing import Any
 
 import psycopg
@@ -104,11 +106,13 @@ def upsert_passages(
     for p, emb in zip(passages, embeddings, strict=True):
         vec = "[" + ",".join(f"{x:.8f}" for x in emb) + "]"
         conn.execute(
-            """INSERT INTO passages (passage_id, source_id, section, page, page_end, grade, text,
-                                     embedding, recommendation, evidence_rating)
-               VALUES (%s,%s,%s,%s,%s,%s,%s,%s::vector,%s,%s)
+            """INSERT INTO passages (passage_id, source_id, section, page, page_end, page_label,
+                                     page_end_label, grade, text, embedding, recommendation,
+                                     evidence_rating)
+               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::vector,%s,%s)
                ON CONFLICT (passage_id) DO UPDATE SET
                  section = EXCLUDED.section, page = EXCLUDED.page, page_end = EXCLUDED.page_end,
+                 page_label = EXCLUDED.page_label, page_end_label = EXCLUDED.page_end_label,
                  grade = EXCLUDED.grade, text = EXCLUDED.text,
                  embedding = EXCLUDED.embedding, recommendation = EXCLUDED.recommendation,
                  evidence_rating = EXCLUDED.evidence_rating, version = passages.version + 1""",
@@ -118,6 +122,8 @@ def upsert_passages(
                 p.section,
                 p.page,
                 p.page_end if p.page_end is not None else p.page,
+                p.page_label,
+                p.page_end_label,
                 p.grade,
                 p.text,
                 vec,
@@ -130,3 +136,36 @@ def upsert_passages(
         (source_id, [p.passage_id for p in passages]),
     )
     return len(passages)
+
+
+def ratings_signature(pairs: Iterable[tuple[str | None, str | None]]) -> str:
+    """Which recommendation has which rating, e.g. "1=Minimal;2=Strong". Used to notice when a
+    re-run changes ratings that a person already verified."""
+    found = set()
+    for rec, rating in pairs:
+        m = re.match(r"\s*Recommendation\s+(\d+)", rec or "")
+        if m and rating:
+            found.add((int(m.group(1)), rating))
+    return ";".join(f"{n}={r}" for n, r in sorted(found))
+
+
+def revoke_if_ratings_changed(
+    conn: psycopg.Connection[Any], source_id: str, passages: list[Passage]
+) -> bool:
+    """If the ratings on the new passages differ from the ones a person verified, the verification
+    is withdrawn (ratings go back to hidden until checked again). Returns True when withdrawn."""
+    row = conn.execute(
+        "SELECT ratings_signature FROM sources "
+        "WHERE source_id = %s AND ratings_verified_at IS NOT NULL",
+        (source_id,),
+    ).fetchone()
+    if row is None:
+        return False
+    if row[0] == ratings_signature((p.recommendation, p.evidence_rating) for p in passages):
+        return False
+    conn.execute(
+        "UPDATE sources SET ratings_verified_by = NULL, ratings_verified_at = NULL "
+        "WHERE source_id = %s",
+        (source_id,),
+    )
+    return True

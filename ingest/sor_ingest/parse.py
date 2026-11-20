@@ -11,6 +11,7 @@ from __future__ import annotations
 import re
 import statistics
 from collections import defaultdict
+from collections.abc import Callable
 from pathlib import Path
 
 import pymupdf
@@ -26,7 +27,8 @@ SKIP_SECTION_RE = re.compile(
     r"|author(s)? note|contributors?|notes? on contributors|biograph\w*"
     r"|acknowledg\w*|disclosures?|disclaimer|copyright|suggested citation|recommended citation"
     r"|how to cite|funding|conflicts? of interest|declarations?|data availability( statement)?"
-    r"|author contributions?|ethics statement|open access|affiliations?|correspondence)\b",
+    r"|author contributions?|ethics statement|open access|affiliations?|correspondence"
+    r"|glossary|overview of recommendations)\b",
     re.IGNORECASE,
 )
 PAGE_NUMBER_RE = re.compile(r"^\W*(page\s+)?\d{1,4}(\s*(of|/)\s*\d{1,4})?\W*$", re.IGNORECASE)
@@ -75,7 +77,18 @@ def _repeated_edge_texts(
     return repeated
 
 
-def parse_pdf(path: Path, grade: str | None = None) -> list[Block]:
+def parse_pdf(
+    path: Path,
+    grade: str | None = None,
+    on_drop: Callable[[int, str, str], None] | None = None,
+) -> list[Block]:
+    """`on_drop(pdf_page, reason, text)` is called for every block that is left out, so a person
+    can see what was dropped and why."""
+
+    def drop(page_no: int, reason: str, text: str) -> None:
+        if on_drop:
+            on_drop(page_no, reason, text)
+
     blocks: list[Block] = []
     with pymupdf.open(path) as doc:
         raw: list[list[tuple[str, tuple[float, float, float, float], float, bool]]] = []
@@ -106,9 +119,17 @@ def parse_pdf(path: Path, grade: str | None = None) -> list[Block]:
         section: str | None = None
         skipping = False
         for page_no, page_blocks in enumerate(raw, start=1):
+            label = doc[page_no - 1].get_label() or str(page_no)
             for text, _bbox, size, bold in page_blocks:
-                if _norm(text) in repeated or PAGE_NUMBER_RE.match(text):
-                    continue  # running header/footer or a bare page number
+                if PAGE_NUMBER_RE.match(text):
+                    drop(page_no, "page number", text)
+                    continue
+                if _norm(text) in repeated:
+                    drop(page_no, "running header or footer", text)
+                    continue
+                if re.fullmatch(r"[A-Za-z]", text):
+                    drop(page_no, "single-letter heading", text)
+                    continue  # glossary letter dividers; not a section
                 is_heading = (
                     len(text.split()) <= 12
                     and not text.endswith(".")
@@ -118,11 +139,19 @@ def parse_pdf(path: Path, grade: str | None = None) -> list[Block]:
                 if is_heading:
                     section = text
                     skipping = bool(SKIP_SECTION_RE.match(text))
-                    blocks.append(Block(text="", page=page_no, section=section, grade=grade))
+                    blocks.append(Block("", page_no, section, grade=grade, page_label=label))
                     continue
-                if skipping or TOC_LEADER_RE.search(text) or _is_reference(text):
+                if skipping:
+                    drop(page_no, f"inside skipped section '{(section or '')[:40]}'", text)
+                    continue
+                if TOC_LEADER_RE.search(text):
+                    drop(page_no, "table-of-contents line", text)
+                    continue
+                if _is_reference(text):
+                    drop(page_no, "reference-list entry", text)
                     continue
                 if len(text.split()) < 3:
-                    continue  # stray labels and figure numbers
-                blocks.append(Block(text=text, page=page_no, section=section, grade=grade))
+                    drop(page_no, "stray label (under 3 words)", text)
+                    continue
+                blocks.append(Block(text, page_no, section, grade=grade, page_label=label))
     return blocks

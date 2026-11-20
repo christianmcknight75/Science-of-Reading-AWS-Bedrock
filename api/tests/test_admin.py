@@ -242,3 +242,24 @@ def test_study_design_facts_are_saved_on_approval(client: TestClient) -> None:
     )  # fmt: skip
     assert r.status_code == 200
     assert (r.json()["randomized"], r.json()["sample_size"]) == (True, 1200)
+
+
+def test_ratings_are_hidden_from_retrieval_until_a_person_verifies_them(
+    client: TestClient,
+) -> None:
+    sid = make_candidate(client)
+    approve(client, sid)
+    conn = app.dependency_overrides[get_conn]()
+    conn.execute(
+        "INSERT INTO passages (passage_id, source_id, text, recommendation, evidence_rating) "
+        "VALUES (%s, %s, 'text', 'Recommendation 1. X', 'Strong')",
+        (f"{sid}_p001", sid),
+    )
+    q = "SELECT evidence_rating FROM retrievable_passages WHERE source_id = %s"
+    assert conn.execute(q, (sid,)).fetchone()["evidence_rating"] is None
+    conn.execute(
+        "UPDATE sources SET ratings_verified_by='viktoriia', ratings_verified_at=now() "
+        "WHERE source_id = %s",
+        (sid,),
+    )
+    assert conn.execute(q, (sid,)).fetchone()["evidence_rating"] == "Strong"
