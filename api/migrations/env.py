@@ -3,9 +3,9 @@ import os
 from alembic import context
 from sqlalchemy import create_engine
 
-url = os.environ.get(
-    "DATABASE_URL", "postgresql://sor:local-dev-only@localhost:5433/sor"
-).replace("postgresql://", "postgresql+psycopg://", 1)
+url = os.environ.get("DATABASE_URL", "postgresql://sor:local-dev-only@localhost:5433/sor").replace(
+    "postgresql://", "postgresql+psycopg://", 1
+)
 
 
 def run_migrations_online() -> None:

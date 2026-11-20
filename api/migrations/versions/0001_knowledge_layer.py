@@ -54,7 +54,9 @@ def upgrade() -> None:
         """
     )
     op.execute("CREATE UNIQUE INDEX sources_doi_key ON sources (lower(doi)) WHERE doi IS NOT NULL")
-    op.execute("CREATE UNIQUE INDEX sources_eric_key ON sources (eric_id) WHERE eric_id IS NOT NULL")
+    op.execute(
+        "CREATE UNIQUE INDEX sources_eric_key ON sources (eric_id) WHERE eric_id IS NOT NULL"
+    )
 
     op.execute(
         """

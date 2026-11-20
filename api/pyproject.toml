@@ -12,6 +12,8 @@ dependencies = [
   "sqlalchemy>=2",
   "psycopg[binary]>=3.2",
   "pgvector>=0.5.1",
+  "pyjwt[crypto]>=2.15.1",
+  "python-multipart>=0.0.34",
 ]
 
 [dependency-groups]
@@ -25,7 +27,8 @@ target-version = "py312"
 select = ["E", "F", "I", "UP", "B", "S"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101"]
+"tests/*" = ["S101", "S106"]
+"migrations/*" = ["E501", "S608"]
 
 [tool.mypy]
 strict = true
