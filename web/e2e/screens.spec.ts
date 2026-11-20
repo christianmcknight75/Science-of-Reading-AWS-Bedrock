@@ -379,3 +379,30 @@ test("Class board: projector view has 64px targets, steps through words, and a f
   await expectNoSeriousViolations(page);
   await expectTargets(page, 64);
 });
+
+// WCAG 1.4.10 Reflow: at 320px wide with the largest text, nothing scrolls sideways.
+const REFLOW = [
+  "#/",
+  "#/ask?q=My%20kids%20know%20letter%20sounds%20but%20can't%20read%20words",
+  "#/teaching/groups",
+  "#/teaching/groups/g-b",
+  "#/teaching/story",
+  "#/teaching/stuck",
+  "#/training",
+  "#/training/topic/segmenting",
+  "#/training/refreshers",
+  "#/settings",
+];
+for (const h of REFLOW) {
+  test(`reflow at 320px with extra large text: ${h}`, async ({ page }) => {
+    await fast(page);
+    await page.addInitScript(() =>
+      window.localStorage.setItem("rh-settings", JSON.stringify({ textSize: "xl" })),
+    );
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto(`/${h}`);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await page.waitForTimeout(300);
+    await expectNoHorizontalScroll(page);
+  });
+}

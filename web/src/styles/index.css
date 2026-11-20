@@ -92,3 +92,8 @@ html[data-motion="reduce"] * {
     background: #fff;
   }
 }
+
+/* WCAG 1.4.10 reflow: grid items may shrink below their content so nothing scrolls sideways at 320px */
+.grid > * {
+  min-width: 0;
+}
