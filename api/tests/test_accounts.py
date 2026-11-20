@@ -204,6 +204,22 @@ def test_request_access_gives_the_same_answer_for_everyone(client: TestClient, d
     )
 
 
+def test_the_job_role_is_kept_for_the_reviewing_admin(client: TestClient) -> None:
+    body = {
+        "name": "Terry",
+        "email": "coach@school.example",
+        "district": "D",
+        "job_role": " Reading coach ",
+    }
+    assert client.post("/api/auth/request-access", json=body).status_code == 202
+    row = client.get("/api/admin/access-requests", headers=bearer(client)).json()[0]
+    assert row["job_role"] == "Reading coach"
+    too_long = {**body, "email": "x@school.example", "job_role": "r" * 61}
+    assert client.post("/api/auth/request-access", json=too_long).status_code == 422
+    plain = {"name": "T", "email": "y@school.example", "district": "D"}  # still optional
+    assert client.post("/api/auth/request-access", json=plain).status_code == 202
+
+
 def test_request_access_validation_and_rate_limit(client: TestClient) -> None:
     bad = client.post(
         "/api/auth/request-access", json={"name": "A", "email": "nope", "district": "D"}

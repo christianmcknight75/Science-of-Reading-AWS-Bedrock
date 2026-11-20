@@ -109,8 +109,8 @@ Tokens are JWTs verified exactly as Cognito tokens will be: RS256 only, signatur
 
 | Endpoint | Body -> response |
 |---|---|
-| `POST /api/auth/request-access` (public, 3 per hour per address) | `{name, email, district}` -> `202 {message}`. The same answer whether or not the email is known, so it cannot be used to find out who has an account. A second pending request from the same email is ignored. |
-| `GET /api/admin/access-requests?status=pending` (admin) | -> `AccessRequest[]` `{request_id, name, email, district, status, requested_at, decided_by, decided_at, decision_reason}` |
+| `POST /api/auth/request-access` (public, 3 per hour per address) | `{name, email, district, job_role?}` -> `202 {message}`. `job_role` is optional free text up to 60 characters ("Reading coach"); it is information for the reviewing admin, not a permission. The same answer whether or not the email is known, so it cannot be used to find out who has an account. A second pending request from the same email is ignored. |
+| `GET /api/admin/access-requests?status=pending` (admin) | -> `AccessRequest[]` `{request_id, name, email, district, job_role, status, requested_at, decided_by, decided_at, decision_reason}` |
 | `POST /api/admin/access-requests/{id}/approve` (admin) | `{role?: "teacher" \| "admin", reason?}` -> `{user_id, invite_code}`. Creates the user (status `active`, no password yet). The one-time `invite_code` (valid 24 h, stored only as a hash) is shown to the admin once; in production it is emailed by Cognito instead. |
 | `POST /api/admin/access-requests/{id}/deny` (admin) | `{reason}` (required) -> `204` |
 | `POST /api/auth/accept-invite` (public) | `{email, invite_code, password (>= 12 chars)}` -> same as sign-in. Sets the password (scrypt hash, per-user salt). **Added; not in the original list.** |
