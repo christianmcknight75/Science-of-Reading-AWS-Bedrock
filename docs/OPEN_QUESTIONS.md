@@ -11,6 +11,6 @@
 | 7 | Bedrock model access (Titan V2) must be enabled before `sor-ingest process --embedder titan`. | Viktoriia (Phase 5 walkthrough) | Open |
 | 8 | `nrp_2000` (National Reading Panel) is marked `ready` in the curated list, but src_0010 was **rejected** in the queue. Re-open it? (There is no "re-open" button yet.) | Viktoriia | Open |
 | 9 | `decodable_meta_2024` (src_0084) and `beginning_texts_2024` (src_0096) are **approved**, but the curated list says CC BY-NC-ND / "quote only" pending a no-derivatives decision. Keep approved? | Team | Open |
-| 10 | Seven curated entries were approved without a license statement in the document (`put_reading_first_k3`, `nsw_cese_...`, REL PLC guide). Aidan to confirm before approval. | Aidan | Open |
+| 10 | Three curated entries have no license statement in the document itself (`put_reading_first_k3`, `nsw_cese_effective_reading_2017`, `rel_se_plc_foundational_k3`). Aidan to confirm before they are approved. | Aidan | Open |
 | 11 | Two curated entries have no URL yet (`ies_reading_comprehension_k3_2010`, `ies_english_learners_2014`). Add URLs in the YAML, then re-run. | Viktoriia | Open |
 | 12 | Evidence-label rule (Phase 2): do `government_guide` sources count like practice guides/reviews for "Very sure"? Non-US guides must be labelled by jurisdiction in answers. | Team | Open |
