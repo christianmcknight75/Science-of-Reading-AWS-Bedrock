@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: sor-ingest
+Version: 0.1.0
+Summary: Reading Helper ingestion pipeline
+Requires-Python: >=3.12
+Requires-Dist: psycopg[binary]>=3.2
+Requires-Dist: pymupdf>=1.24
+Requires-Dist: boto3>=1.35
+Requires-Dist: pyyaml>=6.0.3

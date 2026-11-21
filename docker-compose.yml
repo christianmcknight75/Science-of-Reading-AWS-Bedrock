@@ -1,0 +1,30 @@
+# Local dev only. Passwords here are throwaway local values, not real secrets.
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: sor
+      POSTGRES_PASSWORD: local-dev-only
+      POSTGRES_DB: sor
+    ports: ["127.0.0.1:5433:5432"]  # 5433 on your Mac, so it never clashes with a local Postgres
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sor"]
+      interval: 5s
+      retries: 10
+  api:
+    build: ./api
+    environment:
+      DATABASE_URL: postgresql://sor:local-dev-only@db:5432/sor
+      AUTH_MODE: dev  # LOCAL ONLY: everyone is an admin. Deployed stacks use Cognito.
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      db: {condition: service_healthy}
+  web:
+    image: node:22-slim
+    working_dir: /app
+    volumes: ["./web:/app"]
+    command: sh -c "npm install && npm run dev -- --host"
+    ports: ["127.0.0.1:5173:5173"]
+volumes:
+  pgdata:

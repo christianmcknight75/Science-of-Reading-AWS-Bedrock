@@ -1,0 +1,68 @@
+{
+ "note": "DRAFT proposals by Claude for SME review. Status stays 'proposed' until a named reviewer approves. Nothing here is shown to teachers.",
+ "proposals": [
+  {
+   "myth_id": "myth_three_cueing",
+   "passage_id": "src_0011_p037",
+   "relation": "refutes",
+   "quote": "The panel discourages teachers from allowing students to use guessing strategies",
+   "rationale": "WWC practice guide (Foundational Skills, 2016): the panel discourages guessing strategies for unfamiliar words, which is what multi-cueing teaches. Strongest candidate (WWC guide, rated recommendations)."
+  },
+  {
+   "myth_id": "myth_three_cueing",
+   "passage_id": "src_0128_p004",
+   "relation": "refutes",
+   "quote": "The origin of this model is not entirely clear, has not been linked to cognitive science",
+   "rationale": "Names 'multi-cueing / three-cueing' directly and says it lacks scientific support. Limit: a government summary (AERO, Australia), so it cannot raise the evidence label by itself."
+  },
+  {
+   "myth_id": "myth_picture_guessing",
+   "passage_id": "src_0011_p037",
+   "relation": "refutes",
+   "quote": "discourage students from guessing unknown words using beginning letters or pictures",
+   "rationale": "WWC practice guide: says outright not to let students guess unknown words from beginning letters or pictures. Strongest candidate."
+  },
+  {
+   "myth_id": "myth_picture_guessing",
+   "passage_id": "src_0127_p047",
+   "relation": "supports_alternative",
+   "quote": "they are not forced to guess from pictures, the context, the first letters of a word or its shape",
+   "rationale": "England's Reading Framework: decodable books mean children are not forced to guess from pictures or context. Limit: it recommends decodable texts rather than saying picture-guessing is wrong, and it is a government summary."
+  },
+  {
+   "myth_id": "myth_learning_styles",
+   "passage_id": "src_0127_p071",
+   "relation": "partly",
+   "quote": "Evidence suggests that most pupils with moderate to severe and complex needs are not 'visual learners', as previously thought",
+   "rationale": "Only passage in the corpus that mentions learning styles, and only for pupils with moderate to severe and complex needs, not learners in general. CORPUS GAP: add a source on learning-styles evidence before showing this myth's correction."
+  },
+  {
+   "myth_id": "myth_leveled_only",
+   "passage_id": "src_0127_p047",
+   "relation": "supports_alternative",
+   "quote": "A systematic phonics programme includes sufficient 'decodable' books or texts, so that children can practise",
+   "rationale": "Says beginners should practise with decodable books matched to the sounds taught. It does not mention levelled readers, so it is indirect. CORPUS GAP: a source that addresses levelled texts directly."
+  },
+  {
+   "myth_id": "myth_natural_reading",
+   "passage_id": "src_0128_p004",
+   "relation": "refutes",
+   "quote": "Reading is a biologically secondary skill consisting of multiple cognitive functions, which must be taught systematically",
+   "rationale": "States that reading must be taught, not picked up naturally. Limit: a government summary (AERO)."
+  },
+  {
+   "myth_id": "myth_natural_reading",
+   "passage_id": "src_0127_p045",
+   "relation": "supports_alternative",
+   "quote": "All children (and other pupils who are learning to read) should take part in high-quality phonics sessions",
+   "rationale": "England's Reading Framework: all children need direct, high-quality phonics teaching. Indirect: it does not discuss books-only or 'natural' reading."
+  },
+  {
+   "myth_id": "myth_dyslexia_reversal",
+   "passage_id": "src_0011_p024",
+   "relation": "partly",
+   "quote": "Letter reversals (when students confuse the shape or sound of one letter for a different letter, such as confusing d for b ) are common among children in the early grades",
+   "rationale": "WWC practice guide: letter reversals are common in the early grades. Limit: it also says continued reversals in some (older) children 'can suggest disabilities or other reading challenges', and it never says dyslexia is not about seeing letters backwards. The SME should decide how far this supports the correction."
+  }
+ ]
+}

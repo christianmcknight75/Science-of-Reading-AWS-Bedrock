@@ -2,11 +2,43 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .venv/
 venv/
 
-# Secrets - never commit API keys
-.env
+# Node
+node_modules/
+web/dist/
 
-# Local search output
+# Secrets - never commit keys, env files, or credentials
+.env
+.env.*
+!.env.example
+*.pem
+credentials*
+.aws/
+
+# Local data and search output
 results*.json
+data/local/
+*.sqlite
+
+# CDK
+cdk.out/
+infra/.venv/
+
+# Still private: Claude's local settings, the AWS setup notes and the team's reference documents
+# (CLAUDE.md, docs/PLAN.md and docs/DECISIONS.md are committed since 2026-11-20)
+.claude/
+docs/AWS_SETUP_SAFELY.md
+docs/reference/
+
+# Other working copies (the frontend session's git worktree)
+sor-frontend/
+test-results
+playwright-report
+
+# macOS
+.DS_Store
+evals/reports/

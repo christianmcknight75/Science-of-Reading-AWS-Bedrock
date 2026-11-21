@@ -1,0 +1,74 @@
+{
+ "note": "DRAFT topic list written by Claude; needs SME review.",
+ "topics": [
+  {
+   "id": "blending",
+   "title": "Blending sounds into words",
+   "summary": "Teach children to say each sound, then push the sounds together to read the word.",
+   "training_word": "Blend",
+   "fits": "Kindergarten and 1st grade, once children know a few letter sounds",
+   "query": "teaching students to blend letter sounds to read words",
+   "skills": [
+    "blending",
+    "decoding"
+   ]
+  },
+  {
+   "id": "phonemic-awareness",
+   "title": "Hearing and playing with sounds",
+   "summary": "Short oral activities where children listen for, say and change the sounds in spoken words.",
+   "training_word": "Listen",
+   "fits": "Kindergarten and early 1st grade",
+   "query": "phonemic awareness instruction hearing segmenting and manipulating sounds in spoken words",
+   "skills": [
+    "phonemic awareness"
+   ]
+  },
+  {
+   "id": "digraphs",
+   "title": "Digraphs: sh, ch, th",
+   "summary": "Two letters that make one sound. Teach them explicitly after single letter sounds.",
+   "training_word": "Digraphs",
+   "fits": "1st grade",
+   "query": "explicit systematic phonics instruction letter-sound correspondences digraphs",
+   "skills": [
+    "phonics",
+    "digraphs"
+   ]
+  },
+  {
+   "id": "decodable-texts",
+   "title": "Decodable texts for practice",
+   "summary": "Short texts built from the sounds children have been taught, so they can practice decoding.",
+   "training_word": "Practice",
+   "fits": "Kindergarten through 2nd grade",
+   "query": "decodable texts beginning readers practice taught letter-sound correspondences",
+   "skills": [
+    "decoding",
+    "fluency"
+   ]
+  },
+  {
+   "id": "vocabulary",
+   "title": "Building word knowledge",
+   "summary": "Teach new words with child-friendly meanings, examples and repeated chances to use them.",
+   "training_word": "Words",
+   "fits": "Kindergarten through 3rd grade",
+   "query": "vocabulary instruction teaching word meanings in the early grades",
+   "skills": [
+    "vocabulary"
+   ]
+  },
+  {
+   "id": "fluency",
+   "title": "Reading fluently",
+   "summary": "Repeated, supported reading of text at the right level helps children read smoothly.",
+   "training_word": "Smooth",
+   "fits": "1st through 3rd grade",
+   "query": "fluency instruction repeated reading with feedback",
+   "skills": [
+    "fluency"
+   ]
+  }
+ ]
+}

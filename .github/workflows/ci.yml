@@ -1,0 +1,67 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  python:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env: {POSTGRES_USER: sor, POSTGRES_PASSWORD: local-dev-only, POSTGRES_DB: sor}
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sor" --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: API
+        working-directory: api
+        run: |
+          uv sync
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run mypy app tests
+          uv run alembic upgrade head
+          uv run pytest
+      - name: Ingest
+        working-directory: ingest
+        run: |
+          uv sync
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run mypy sor_ingest tests
+          uv run pytest
+  web:
+    runs-on: ubuntu-latest
+    defaults: {run: {working-directory: web}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm, cache-dependency-path: web/package-lock.json}
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run format:check
+      - run: npm run build
+  e2e:
+    runs-on: ubuntu-latest
+    defaults: {run: {working-directory: web}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm, cache-dependency-path: web/package-lock.json}
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e

@@ -1,0 +1,111 @@
+"""Needs the local Postgres (make dev / docker compose up db). Skipped if unreachable."""
+
+from collections.abc import Iterator
+from typing import Any
+
+import psycopg
+import pytest
+
+from sor_ingest import store
+from sor_ingest.chunking import Passage
+from sor_ingest.embedder import StubEmbedder
+
+
+@pytest.fixture
+def conn() -> Iterator[psycopg.Connection[Any]]:
+    try:
+        c = store.connect()
+    except psycopg.OperationalError:
+        pytest.skip("local Postgres not running")
+    yield c
+    c.rollback()  # every test runs inside a transaction that is rolled back
+    c.close()
+
+
+def test_candidate_cannot_get_passages(conn: psycopg.Connection[Any]) -> None:
+    sid = store.add_candidate(conn, {"source_api": "eric", "source_id": "EJ_TEST1", "title": "T"})
+    assert sid is not None
+    p = Passage(f"{sid}_p001", "A", 1, "text")
+    with pytest.raises(PermissionError):
+        store.upsert_passages(conn, sid, [p], [StubEmbedder().embed("text")])
+
+
+def test_duplicate_candidate_skipped(conn: psycopg.Connection[Any]) -> None:
+    rec = {"source_api": "openalex", "source_id": "W1", "title": "T", "doi": "10.1/x"}
+    assert store.add_candidate(conn, rec)
+    assert store.add_candidate(conn, rec) is None
+
+
+def test_db_refuses_approval_without_license_record(conn: psycopg.Connection[Any]) -> None:
+    sid = store.add_candidate(conn, {"source_api": "eric", "source_id": "EJ_TEST2", "title": "T"})
+    assert sid is not None
+    store.audit_context(conn, "tester", "test approval")
+    with pytest.raises(psycopg.errors.CheckViolation):
+        conn.execute("UPDATE sources SET status = 'approved' WHERE source_id = %s", (sid,))
+
+
+def test_approved_source_gets_passages_and_reupsert_bumps_version(
+    conn: psycopg.Connection[Any],
+) -> None:
+    sid = store.add_candidate(conn, {"source_api": "eric", "source_id": "EJ_TEST3", "title": "T"})
+    assert sid is not None
+    store.audit_context(conn, "tester", "test approval")
+    conn.execute(
+        """UPDATE sources SET status='approved', approved_by='tester', approved_at=now(),
+           license='cc-by', attribution='A', license_snapshot_url='x', license_checklist='{}'
+           WHERE source_id=%s""",
+        (sid,),
+    )
+    p = Passage(f"{sid}_p001", "A", 1, "phonics text")
+    emb = [StubEmbedder().embed("phonics text")]
+    store.upsert_passages(conn, sid, [p], emb)
+    store.upsert_passages(conn, sid, [p], emb)
+    row = conn.execute(
+        "SELECT version FROM passages WHERE passage_id=%s", (p.passage_id,)
+    ).fetchone()
+    assert row and row[0] == 2
+
+
+def test_direct_status_change_is_refused_and_logged_changes_are_audited(
+    conn: psycopg.Connection[Any],
+) -> None:
+    sid = store.add_candidate(conn, {"source_api": "eric", "source_id": "EJ_TEST4", "title": "T"})
+    assert sid is not None
+    with pytest.raises(psycopg.errors.CheckViolation, match="actor and a reason"):
+        conn.execute("UPDATE sources SET status = 'rejected' WHERE source_id = %s", (sid,))
+    conn.rollback()
+    sid = store.add_candidate(conn, {"source_api": "eric", "source_id": "EJ_TEST5", "title": "T"})
+    store.audit_context(conn, "ann", "not relevant")
+    conn.execute("UPDATE sources SET status = 'rejected' WHERE source_id = %s", (sid,))
+    row = conn.execute(
+        "SELECT actor, from_status, to_status, reason FROM source_audit WHERE source_id = %s",
+        (sid,),
+    ).fetchone()
+    assert row == ("ann", "candidate", "rejected", "not relevant")
+
+
+def test_identity_change_on_reviewed_source_is_audited(conn: psycopg.Connection[Any]) -> None:
+    sid = store.add_candidate(conn, {"source_api": "eric", "source_id": "EJ_TEST2", "title": "Old"})
+    assert sid is not None
+    store.audit_context(conn, "tester", "Rejected: test")
+    conn.execute("UPDATE sources SET status='rejected' WHERE source_id=%s", (sid,))
+    # no actor/reason -> refused
+    conn.execute("SELECT set_config('app.actor', '', true), set_config('app.reason', '', true)")
+    with pytest.raises(psycopg.errors.CheckViolation):
+        conn.execute("UPDATE sources SET title='New' WHERE source_id=%s", (sid,))
+    conn.rollback()
+
+
+def test_identity_change_writes_audit_row(conn: psycopg.Connection[Any]) -> None:
+    sid = store.add_candidate(conn, {"source_api": "eric", "source_id": "EJ_TEST3", "title": "Old"})
+    assert sid is not None
+    store.audit_context(conn, "tester", "Rejected: test")
+    conn.execute("UPDATE sources SET status='rejected' WHERE source_id=%s", (sid,))
+    store.audit_context(conn, "tester", "publisher replaced the document")
+    conn.execute("UPDATE sources SET title='New', year=2024 WHERE source_id=%s", (sid,))
+    row = conn.execute(
+        "SELECT actor, reason FROM source_audit WHERE source_id=%s ORDER BY id DESC LIMIT 1", (sid,)
+    ).fetchone()
+    assert row is not None
+    assert row[0] == "tester"
+    assert "'Old' -> 'New'" in row[1] and "publisher replaced" in row[1]

@@ -1,0 +1,17 @@
+pyproject.toml
+sor_ingest/__init__.py
+sor_ingest/chunking.py
+sor_ingest/cli.py
+sor_ingest/embedder.py
+sor_ingest/parse.py
+sor_ingest/store.py
+sor_ingest.egg-info/PKG-INFO
+sor_ingest.egg-info/SOURCES.txt
+sor_ingest.egg-info/dependency_links.txt
+sor_ingest.egg-info/entry_points.txt
+sor_ingest.egg-info/requires.txt
+sor_ingest.egg-info/top_level.txt
+tests/test_chunking.py
+tests/test_embedder.py
+tests/test_parse.py
+tests/test_store_gate.py
