@@ -1,4 +1,17 @@
+import { clearToken, getToken } from "../api/session";
+
 export const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+
+/** The admin calls need the same bearer token as every other call (docs/API_CONTRACT.md). */
+function authed(init: RequestInit = {}): RequestInit {
+  const token = getToken();
+  return token
+    ? {
+        ...init,
+        headers: { ...(init.headers as Record<string, string>), Authorization: `Bearer ${token}` },
+      }
+    : init;
+}
 
 export interface Source {
   source_id: string;
@@ -30,6 +43,10 @@ export interface Checklist {
 
 async function check(r: Response): Promise<Response> {
   if (r.ok) return r;
+  if (r.status === 401) {
+    clearToken(); // expired or signed out: the app returns to the sign-in screen
+    window.dispatchEvent(new Event("rh-signed-out"));
+  }
   let msg = `Request failed (${r.status})`;
   try {
     const body = await r.json();
@@ -42,25 +59,31 @@ async function check(r: Response): Promise<Response> {
 }
 
 export async function listSources(status: Source["status"]): Promise<Source[]> {
-  return (await check(await fetch(`${API_URL}/admin/sources?status=${status}`))).json();
+  return (await check(await fetch(`${API_URL}/admin/sources?status=${status}`, authed()))).json();
 }
 
 export async function uploadSnapshot(id: string, file: File): Promise<void> {
   const form = new FormData();
   form.append("file", file);
   await check(
-    await fetch(`${API_URL}/admin/sources/${id}/license-snapshot`, { method: "POST", body: form }),
+    await fetch(
+      `${API_URL}/admin/sources/${id}/license-snapshot`,
+      authed({ method: "POST", body: form }),
+    ),
   );
 }
 
 export async function decide(id: string, body: Record<string, unknown>): Promise<Source> {
   return (
     await check(
-      await fetch(`${API_URL}/admin/sources/${id}/decision`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      }),
+      await fetch(
+        `${API_URL}/admin/sources/${id}/decision`,
+        authed({
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }),
+      ),
     )
   ).json();
 }
@@ -76,15 +99,18 @@ export interface AuditEntry {
 export async function reopen(id: string, reason: string): Promise<Source> {
   return (
     await check(
-      await fetch(`${API_URL}/admin/sources/${id}/reopen`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason }),
-      }),
+      await fetch(
+        `${API_URL}/admin/sources/${id}/reopen`,
+        authed({
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason }),
+        }),
+      ),
     )
   ).json();
 }
 
 export async function getAudit(id: string): Promise<AuditEntry[]> {
-  return (await check(await fetch(`${API_URL}/admin/sources/${id}/audit`))).json();
+  return (await check(await fetch(`${API_URL}/admin/sources/${id}/audit`, authed()))).json();
 }

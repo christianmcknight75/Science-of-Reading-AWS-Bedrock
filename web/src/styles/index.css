@@ -1,3 +1,257 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ---- Accessibility and display settings ------------------------------------------------ */
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+html[data-contrast="high"] :focus-visible {
+  outline-color: #000;
+  box-shadow: 0 0 0 5px #fff;
+}
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 0.5rem;
+  font-weight: 700;
+}
+.skip-link:focus {
+  top: 0.5rem;
+}
+html[data-text-size="large"] {
+  font-size: 20px;
+}
+html[data-text-size="xl"] {
+  font-size: 24px;
+}
+html[data-contrast="high"] {
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-ink: #000000;
+  --color-muted: #1a1a1a;
+  --color-border: #000000;
+  --color-control-border: #000000;
+  --color-idea: #000000;
+  --color-primary: #0a2a5a;
+  --color-primary-hover: #000000;
+  --color-notice-bg: #ffffff;
+  --color-notice-text: #000000;
+}
+html[data-contrast="high"] .rh-card {
+  border-width: 2px;
+  border-color: #000;
+}
+mark.rh-quote {
+  background: var(--color-highlight);
+  color: #15233a;
+  padding: 0.05em 0.15em;
+  border-radius: 0.2em;
+}
+html[data-contrast="high"] mark.rh-quote {
+  background: #000;
+  color: #fff;
+}
+/* Respect the OS setting and the in-app setting */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+html[data-motion="reduce"] * {
+  animation-duration: 0.001ms !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+@keyframes rh-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.rh-pulse {
+  animation: rh-pulse 1.6s ease-in-out infinite;
+}
+/* Printing an idea or a plan: only the content, no navigation */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  html {
+    background: #fff;
+  }
+}
+
+/* WCAG 1.4.10 reflow: grid items may shrink below their content so nothing scrolls sideways at 320px */
+.grid > * {
+  min-width: 0;
+}
+
+/* ---- v2: type scale, page background, depth ------------------------------------------- */
+body {
+  margin: 0;
+  background:
+    linear-gradient(180deg, #eaf0f9 0, var(--color-bg) 360px) no-repeat,
+    var(--color-bg);
+  line-height: 1.55;
+}
+html[data-contrast="high"] body {
+  background: #fff;
+}
+h1 {
+  letter-spacing: -0.01em;
+}
+.eyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.rh-card {
+  box-shadow: var(--shadow-card);
+}
+html[data-contrast="high"] .rh-card,
+html[data-contrast="high"] header,
+html[data-contrast="high"] footer {
+  box-shadow: none;
+}
+.rh-interactive {
+  transition:
+    transform var(--dur-base) var(--ease),
+    box-shadow var(--dur-base) var(--ease);
+}
+.rh-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+button:not(:disabled):active,
+a.rh-press:active {
+  transform: scale(0.98);
+}
+
+/* ---- v2: motion (decoration only; switched off by reduced-motion, see rule above) --------- */
+@keyframes rh-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+main .rh-card,
+.rh-rise {
+  animation: rh-rise var(--dur-slow) var(--ease) both;
+}
+main .rh-card:nth-child(2),
+.rh-rise:nth-child(2) {
+  animation-delay: 40ms;
+}
+main .rh-card:nth-child(3),
+.rh-rise:nth-child(3) {
+  animation-delay: 80ms;
+}
+main .rh-card:nth-child(4),
+.rh-rise:nth-child(4) {
+  animation-delay: 120ms;
+}
+main .rh-card:nth-child(n + 5) {
+  animation-delay: 160ms;
+}
+@keyframes rh-slide-in {
+  from {
+    transform: translateX(32px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes rh-slide-out {
+  to {
+    transform: translateX(32px);
+    opacity: 0;
+  }
+}
+@keyframes rh-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes rh-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+.rh-panel[data-state="open"] {
+  animation: rh-slide-in var(--dur-slow) var(--ease) both;
+}
+.rh-panel[data-state="closed"] {
+  animation: rh-slide-out var(--dur-base) var(--ease) both;
+}
+.rh-overlay[data-state="open"] {
+  animation: rh-fade-in var(--dur-slow) var(--ease) both;
+}
+.rh-overlay[data-state="closed"] {
+  animation: rh-fade-out var(--dur-base) var(--ease) both;
+}
+
+/* Mascot micro-animations */
+@keyframes wren-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+@keyframes wren-blink {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes wren-dot {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.wren-bob {
+  animation: wren-bob 4s ease-in-out infinite;
+}
+.wren-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: wren-blink 5s infinite;
+}
+.wren-dot {
+  animation: wren-dot 1.4s ease-in-out infinite;
+}
+
+/* sticky header (~64px): keep focused fields and anchors from hiding under it (WCAG 2.4.11 intent) */
+html {
+  scroll-padding-top: 5rem;
+}
